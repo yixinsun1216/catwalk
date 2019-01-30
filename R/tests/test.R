@@ -3,23 +3,31 @@ library(testthat)
 require(stats)
 library(modelr)
 library(lfe)
+library(broom)
+library(kableExtra)
+library(lmtest)
 
 #===========
 # read in
 #===========
 
-source("regtable.R"))
-source("read_latex.R"))
+root <- getwd()
+while(basename(root) != "regtable") {
+  root <- dirname(root)
+}
+
+source(file.path(root, "R", "regtable.R")) 
+source(file.path(root, "R", "read_latex.R")) 
 
 #===========
 # function
 #===========
 
-standard_equivalence_tests <- function(model, latex_output, dual = FALSE) {
+standard_equivalence_tests <- function(model_list, latex_output, dual = FALSE) {
 
 	model = model_list[[1]]
 
-	latex_file <- file.path(root, 'tests', 'latex', 'temp_regression.tex')
+	latex_file <- file.path(root, 'R', 'tests', 'latex', 'temp_regression.tex')
 
 	writeLines(latex_output, latex_file)
 
@@ -31,16 +39,16 @@ standard_equivalence_tests <- function(model, latex_output, dual = FALSE) {
 			latex_coef <- read_latex(latex_file, output = 'coef') %>% 
 				filter(type=='coef') %>% 
 				select(-c(est_name, type)) %>% 
-				pull(-count) %>% 
+				pull(count) %>% 
 				as.double()
-			model_coef <-  model_list[[-count]] %>% 
+			model_coef <-  model_list[[count]] %>% 
 				summary() %>% 
 				coef() %>% 
 				.[-1,1] %>% 
 				as.double() %>% 
 				round(3)
 			if (length(model_coef) < length(latex_coef)) {
-				model_coef <-  model_list[[-count]] %>% 
+				model_coef <-  model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
 					.[,1] %>% 
@@ -60,18 +68,18 @@ standard_equivalence_tests <- function(model, latex_output, dual = FALSE) {
 			latex_se <- read_latex(latex_file, output = 'coef') %>% 
 				filter(type=='se') %>% 
 				select(-c(est_name, type)) %>% 
-				pull(-count) %>% 
+				pull(count) %>% 
 				str_replace_all("\\)", '') %>%
 				str_replace_all("\\(", '') %>%
 				as.double()
-			model_se <-  model_list[[-count]] %>% 
+			model_se <-  model_list[[count]] %>% 
 				summary() %>% 
 				coef() %>% 
 				.[-1,2] %>% 
 				as.double() %>% 
 				round(3)
 			if (length(model_se) < length(latex_se)) {
-				model_se <-  model_list[[-count]] %>% 
+				model_se <-  model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
 					.[,2] %>% 
@@ -89,9 +97,9 @@ standard_equivalence_tests <- function(model, latex_output, dual = FALSE) {
 			latex_projected_R2 <- read_latex(latex_file, output = 'stats') %>% 
 				filter(stats_name=='Proj. $R^2$') %>% 
 				select(-stats_name) %>% 
-				pull(-count) %>% 
+				pull(count) %>% 
 				as.double()
-			model_projected_R2 <- model_list[[-count]] %>% 
+			model_projected_R2 <- model_list[[count]] %>% 
 				summary() %>% 
 				.$adj.r.squared %>% 
 				round(3)
@@ -100,14 +108,21 @@ standard_equivalence_tests <- function(model, latex_output, dual = FALSE) {
 	})
 
 	test_that("testing N equivalence", {
-		latex_N <- read_latex(latex_file, output = 'stats') %>% 
-			filter(stats_name=='N') %>% 
-			select(-stats_name) %>% 
-			pull() %>% 
-			as.double()
-		model_N <- model %>% 
-			nobs()
-		expect_equal(model_N, latex_N)
+		count = 0
+		while (count<length(model_list)) {
+			count = count + 1
+			latex_N <- read_latex(latex_file, output = 'stats') %>% 
+				filter(stats_name=='N') %>% 
+				select(-stats_name) %>% 
+				pull(count) %>% 
+				as.double()
+			if (class(model_list[[count]])=='felm') {
+				model_N <- model_list[[count]]$N
+			} else {
+				model_N <- model_list[[count]] %>% nobs()
+			}
+			expect_equal(model_N, latex_N)
+		}
 	})
 }
 
@@ -123,7 +138,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 				output_format = "latex", 
 				extra_rows = extra_rows)
 
-	standard_equivalence_tests(model, latex_output)
+	standard_equivalence_tests(model_list, latex_output)
 	
 	})
 }
