@@ -7,7 +7,7 @@ require(stats)
 #===========
 root <- "C:/Users/Yixin Sun/Documents/Github/regtable"
 source(file.path(root, "R/regtable.R"))
-source(file.path(root, "R/latex_reader.R"))
+source(file.path(root, "tests/latex_reader.R"))
 
 #===========
 # tests
@@ -21,8 +21,7 @@ count_decimals <- function(no){
 regtable_test <- function(df, r, f, ...){
 	test_fit <- fit_with(df, r, f, ...)[[1]] 
 
-	coef_names <- 
-	  names(coef(test_fit)) 
+	coef_names <- names(coef(test_fit)) 
 
 	latex_output <- 
 	  list(test_fit) %>%
@@ -46,7 +45,7 @@ regtable_test <- function(df, r, f, ...){
 
 
 # use freeny - Freeny's Revenue Data
-test_that("testing single model, single independent variable", {
+test_that("testing single model", {
 	regtable_test(freeny, felm, list(formula(y ~ lag.quarterly.revenue)))
-	regtable_test(freeny, lm, list(formula(y ~ lag.quarterly.revenue)))
+	regtable_test(freeny, lm, list(formula(y ~ lag.quarterly.revenue + price.index)))
 })
