@@ -1,0 +1,18 @@
+Package: regtable
+Type: Package
+Title: Outputting Regression Tables 
+Version: 0.1.0
+Author: person("Yixin", "Sun", email = "ysun9@uchicago.edu", 
+  role = c("aut", "cre"))
+Description: Wrapper around kable for outputting regression tables
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    rlang,
+    purrr,
+    knitr,
+    kableExtra,
+    broom
+RoxygenNote: 6.1.0
