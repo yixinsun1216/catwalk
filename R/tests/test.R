@@ -6,6 +6,7 @@ library(lfe)
 library(broom)
 library(kableExtra)
 library(lmtest)
+library(rlang)
 
 #===========
 # read in
@@ -22,6 +23,31 @@ source(file.path(root, "R", "read_latex.R"))
 #===========
 # functions
 #===========
+
+custom_expect_equal <- function(model_object, latex_object) {
+	act_model <- quasi_label(enquo(model_object))
+	act_model$n <- length(act_model$val)
+	act_model$name <- 'model object'
+
+	act_latex <- quasi_label(enquo(latex_object))
+	act_latex$n <- length(act_latex$val)
+	act_latex$name <- 'latex object'
+
+	expect(act_model$n == act_latex$n,
+	    sprintf("%s has %i numbers, but %s has %i numbers.", act_model$name, 
+	    	act_model$n, act_latex$name, act_latex$n)
+	    )
+
+	for (i in 1:act_latex$n) {
+		expect(act_model$val[i] == act_latex$val[i],
+		    sprintf("The %s has a value of %f in position %i, 
+		    	but the %s has a value of %i in that position.
+		    	Difference: %f", act_model$name, 
+		    	act_model$val[i], i, act_latex$name, 
+		    	act_latex$val[i], act_model$val[i]-act_latex$val[i])
+	    )
+	}
+}
 
 test_model <- function(model_list, test_statement, est, est_names = NULL, 
 	extra_rows = NULL) {
@@ -175,6 +201,8 @@ model3 <- mtcars %>%
 # evaluate tests
 #===========
 
+# 1 model, 1-5 ind. variables, lm
+
 test_model(list(lm_fits$one), 
 	"testing single lm model, one independent variable", 
 	est = 'drat')
@@ -194,6 +222,8 @@ test_model(list(lm_fits$four),
 test_model(list(lm_fits$five), 
 	"testing single lm model, five independent variables", 
 	est = c('drat', 'cyl', 'am', 'vs', 'drat:cyl'))
+
+# 1 model, 1-5 ind. variables, felm
 
 test_model(list(felm_fits$one), 
 	"testing single felm model, one independent variable", 
@@ -215,10 +245,14 @@ test_model(list(felm_fits$five),
 	"testing single felm model, five independent variables", 
 	est = c('drat', 'cyl', 'am', 'vs', 'drat:cyl'))
 
+# 2 models, 2 ind. variables, felm
+
 test_model(list(model1, model2), 
 	"testing dual felm model, two independent variables", 
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company"))) 
+
+# 3 models, 2 ind. variables, felm
 
 test_model(list(model1, model2, model3), 
 	"testing tripl felm model, two independent variables", 
