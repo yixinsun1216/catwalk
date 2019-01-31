@@ -22,6 +22,9 @@ source(file.path(root, "R", "read_latex.R"))
 #===========
 # functions
 #===========
+count_decimals <- function(no){
+	nchar(gsub("(.*\\.)|([0]*$)", "", as.character(no))) 
+}
 
 count_decimals <- function(no){
 	nchar(gsub("(.*\\.)|(*$)", "", as.character(no)))
@@ -74,28 +77,29 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					output_format = "latex", 
 					extra_rows = extra_rows)
 
-		latex_file <- file.path(root, 'tests', 'latex', 'temp_regression.tex')
-
-		writeLines(latex_output, latex_file)
-
 		test_that("testing coefficient equivalence", {
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_coef <- read_latex(latex_file, output = 'coef') %>% 
+				latex_coef <- 
+					read_latex(latex_output, output = 'coef') %>% 
 					filter(type=='coef') %>% 
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
 					as.double()
-				decimals = max(count_decimals(latex_coef))
-				model_coef <-  model_list[[count]] %>% 
+
+				decimals <- max(count_decimals(latex_coef))
+				model_coef <-  
+					model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
 					.[-1,1] %>% 
 					as.double() %>% 
 					round(decimals)
+
 				if (length(model_coef) < length(latex_coef)) {
-					model_coef <-  model_list[[count]] %>% 
+					model_coef <-  
+						model_list[[count]] %>% 
 						summary() %>% 
 						coef() %>% 
 						.[,1] %>% 
@@ -110,20 +114,23 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_se <- read_latex(latex_file, output = 'coef') %>% 
+				latex_se <- 
+					read_latex(latex_output, output = 'coef') %>% 
 					filter(type=='se') %>% 
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
 					str_replace_all("\\)", '') %>%
 					str_replace_all("\\(", '') %>%
 					as.double()
-				decimals = max(count_decimals(latex_se))
+        
+				decimals <- max(count_decimals(latex_se))
 				model_se <-  model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
 					.[-1,2] %>% 
 					as.double() %>% 
 					round(decimals)
+
 				if (length(model_se) < length(latex_se)) {
 					model_se <-  model_list[[count]] %>% 
 						summary() %>% 
@@ -137,20 +144,43 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 		})
 
 		test_that("testing projected R^2 equivalence", {
+			adj_name <- regex("^adj", ignore_case = TRUE)
+
+			latex_projected_R2 <- 
+			  read_latex(latex_output, output = 'stats') %>%
+			  filter(stats_name=='Proj. $R^2$') %>%
+			  gather(key, stats, -stats_name) %>%
+			  select(stats)
+
+			model_projected_R2 <-
+			  model_list %>%
+			  tibble() %>%
+			  rename(model = 1) %>%
+			  mutate(stats = map(model, function(x) unclass(summary(x))), 
+			  	stats_name = map(model, function(x) names(summary(x)))) %>%
+			  unnest(stats, stats_name) %>%
+			  filter(str_detect(stats_name, adj_name)) %>%
+			  mutate(stats = unlist(stats)) %>%
+			  select(stats)
+
+
+
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_projected_R2 <- read_latex(latex_file, 
+				latex_projected_R2 <- read_latex(latex_output, 
 					output = 'stats') %>% 
 					filter(stats_name=='Proj. $R^2$') %>% 
 					select(-stats_name) %>% 
 					pull(count) %>% 
 					as.double()
-				decimals = max(count_decimals(latex_projected_R2))
+
+				decimals <- max(count_decimals(latex_projected_R2))
 				model_projected_R2 <- model_list[[count]] %>% 
 					summary() %>% 
 					.$adj.r.squared %>% 
 					round(decimals)
+
 				custom_expect_equal(model_projected_R2, latex_projected_R2, 
 					count)
 			}
@@ -160,7 +190,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_N <- read_latex(latex_file, output = 'stats') %>% 
+				latex_N <- read_latex(latex_output, output = 'stats') %>% 
 					filter(stats_name=='N') %>% 
 					select(-stats_name) %>% 
 					pull(count) %>% 
