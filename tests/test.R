@@ -1,12 +1,9 @@
 library(tidyverse)
 library(testthat)
 require(stats)
-library(modelr)
 library(lfe)
-library(broom)
 library(kableExtra)
 library(lmtest)
-library(rlang)
 
 #===========
 # read in
