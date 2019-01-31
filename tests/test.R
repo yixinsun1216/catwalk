@@ -200,6 +200,9 @@ felm_fits <- mtcars %>% fit_with(felm, formulas(~disp,
 model1 <- mtcars %>% 
 	felm(disp ~ drat + cyl , data = .)
 
+model1.1 <- mtcars %>% 
+	lm(disp ~ drat + cyl , data = .)
+
 model2 <- mtcars %>% 
 	rownames_to_column('company') %>% 
 	mutate(company = word(company)) %>% 
@@ -217,58 +220,65 @@ model3 <- mtcars %>%
 # 1 model, 1-5 ind. variables, lm
 
 test_model(list(lm_fits$one), 
-	"testing single lm model, one independent variable", 
+	"testing 1 lm model, 1 independent variable", 
 	est = 'drat')
 
 test_model(list(lm_fits$two), 
-	"testing single lm model, two independent variables", 
+	"testing 1 lm model, 2 independent variables", 
 	est = c('drat', 'cyl'))
 
 test_model(list(lm_fits$three), 
-	"testing single lm model, three independent variables", 
+	"testing 1 lm model, 3 independent variables", 
 	est = c('drat', 'cyl', 'drat:cyl'))
 
 test_model(list(lm_fits$four), 
-	"testing single lm model, four independent variables", 
+	"testing 1 lm model, 4 independent variables", 
 	est = c('drat', 'cyl', 'am', 'drat:cyl'))
 
 test_model(list(lm_fits$five), 
-	"testing single lm model, five independent variables", 
+	"testing 1 lm model, 5 independent variables", 
 	est = c('drat', 'cyl', 'am', 'vs', 'drat:cyl'))
 
 # 1 model, 1-5 ind. variables, felm
 
 test_model(list(felm_fits$one), 
-	"testing single felm model, one independent variable", 
+	"testing 1 felm model, 1 independent variable", 
 	est = 'drat')
 
 test_model(list(felm_fits$two), 
-	"testing single felm model, two independent variables", 
+	"testing 1 felm model, 2 independent variables", 
 	est = c('drat', 'cyl'))
 
 test_model(list(felm_fits$three), 
-	"testing single felm model, three independent variables", 
+	"testing 1 felm model, 3 independent variables", 
 	est = c('drat', 'cyl', 'drat:cyl'))
 
 test_model(list(felm_fits$four), 
-	"testing single felm model, four independent variables", 
+	"testing 1 felm model, 4 independent variables", 
 	est = c('drat', 'cyl', 'am', 'drat:cyl'))
 
 test_model(list(felm_fits$five), 
-	"testing single felm model, five independent variables", 
+	"testing 1 felm model, 5 independent variables", 
 	est = c('drat', 'cyl', 'am', 'vs', 'drat:cyl'))
 
 # 2 models, 2 ind. variables, felm
 
 test_model(list(model1, model2), 
-	"testing dual felm model, two independent variables", 
+	"testing 2 felm models, 2 independent variables", 
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company"))) 
 
 # 3 models, 2 ind. variables, felm
 
 test_model(list(model1, model2, model3), 
-	"testing tripl felm model, two independent variables", 
+	"testing 3 felm models, 2 independent variables", 
+	est = c('drat', 'cyl'), 
+	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
+
+# 3 models, 2 ind. variables, lm/felm mix
+
+test_model(list(model1.1, model2, model3), 
+	"testing 3 felm models, 2 independent variables", 
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
 
