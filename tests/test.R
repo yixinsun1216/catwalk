@@ -62,33 +62,35 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					extra_rows = extra_rows)
 
 
-		latex_file <- file.path(root, 'tests', 'latex', 
-			'temp_regression.tex')
-
-		writeLines(latex_output, latex_file)
 
 		test_that("testing coefficient equivalence", {
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_coef <- read_latex(latex_file, output = 'coef') %>% 
+				latex_coef <- 
+					read_latex(latex_output, output = 'coef') %>% 
 					filter(type=='coef') %>% 
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
 					as.double()
-				model_coef <-  model_list[[count]] %>% 
+
+				decimals <- max(count_decimals(latex_coef))
+				model_coef <-  
+					model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
 					.[-1,1] %>% 
 					as.double() %>% 
-					round(3)
+					round(decimals)
+
 				if (length(model_coef) < length(latex_coef)) {
-					model_coef <-  model_list[[count]] %>% 
+					model_coef <-  
+						model_list[[count]] %>% 
 						summary() %>% 
 						coef() %>% 
 						.[,1] %>% 
 						as.double() %>% 
-						round(3)
+						round(decimals)
 				}
 				expect_equal(model_coef, latex_coef)
 			}
@@ -98,26 +100,31 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_se <- read_latex(latex_file, output = 'coef') %>% 
+				latex_se <- 
+					read_latex(latex_output, output = 'coef') %>% 
 					filter(type=='se') %>% 
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
 					str_replace_all("\\)", '') %>%
 					str_replace_all("\\(", '') %>%
 					as.double()
+
+				decimals <- max(count_decimals(latex_se))
+
 				model_se <-  model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
 					.[-1,2] %>% 
 					as.double() %>% 
-					round(3)
+					round(decimals)
+
 				if (length(model_se) < length(latex_se)) {
 					model_se <-  model_list[[count]] %>% 
 						summary() %>% 
 						coef() %>% 
 						.[,2] %>% 
 						as.double() %>% 
-						round(3)
+						round(decimals)
 				}
 				expect_equal(model_se, latex_se)
 			}
@@ -148,16 +155,19 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_projected_R2 <- read_latex(latex_file, 
+				latex_projected_R2 <- read_latex(latex_output, 
 					output = 'stats') %>% 
 					filter(stats_name=='Proj. $R^2$') %>% 
 					select(-stats_name) %>% 
 					pull(count) %>% 
 					as.double()
+
+				decimals <- max(count_decimals(latex_projected_R2))
+
 				model_projected_R2 <- model_list[[count]] %>% 
 					summary() %>% 
 					.$adj.r.squared %>% 
-					round(3)
+					round(decimals)
 				expect_equal(model_projected_R2, latex_projected_R2)
 			}
 		})
@@ -166,7 +176,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_N <- read_latex(latex_file, output = 'stats') %>% 
+				latex_N <- read_latex(latex_output, output = 'stats') %>% 
 					filter(stats_name=='N') %>% 
 					select(-stats_name) %>% 
 					pull(count) %>% 
