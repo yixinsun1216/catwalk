@@ -223,6 +223,11 @@ rf_model2 <-  mtcars %>%
 	mutate(company = word(company)) %>% 
 	rf_semipar(disp ~ drat + cyl | company + gear, .)
 
+rf_model3 <-  mtcars %>% 
+	rownames_to_column('company') %>% 
+	mutate(company = word(company)) %>% 
+	rf_semipar(disp ~ drat + cyl + drat:cyl| company + gear, .)
+
 #===========
 # evaluate tests
 #===========
@@ -292,7 +297,14 @@ test_model(list(model1.1, model2, model3),
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
 
-# 1 model, 1-2 ind. variable, random forest
+# 3 models, 2 ind. variables, lm/felm/rf mix
+
+test_model(list(model1.1, model2, rf_model2), 
+	"testing 3 felm models, 2 independent variables", 
+	est = c('drat', 'cyl'), 
+	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
+
+# 1 model, 1-3 ind. variables, random forest
 
 test_model(list(rf_model1), 
 	"testing 1 rf_semipar model, 1 independent variables", 
@@ -301,3 +313,8 @@ test_model(list(rf_model1),
 test_model(list(rf_model2), 
 	"testing 1 rf_semipar model, 2 independent variables", 
 	est = c('drat', 'cyl')) 
+
+test_model(list(rf_model3), 
+	"testing 1 rf_semipar model, 3 independent variables", 
+	est = c('drat', 'cyl', 'drat:cyl')) 
+
