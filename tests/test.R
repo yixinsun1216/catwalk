@@ -24,16 +24,6 @@ count_decimals <- function(no){
 	nchar(gsub("(.*\\.)|([0]*$)", "", as.character(no))) 
 }
 
-coef_tibble <- function(x){
-	output <- 
-	  x %>%
-	  summary %>%
-	  coef 
-	output <- 
-	  tibble(est_name = rownames(output)) %>% 
-	  bind_cols(as_tibble(output))
-}
-
 custom_expect_equal <- function(model_object, latex_object) {
 	act_model <- quasi_label(enquo(model_object))
 	act_model$n <- length(act_model$val)
@@ -71,39 +61,67 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					output_format = "latex", 
 					extra_rows = extra_rows)
 
-		if(is.null(est_names)) {est_names <- est}
 
-		test_that("testing coefficient and se equivalence", {
-			latex_coef <- 
-			  read_latex(latex_output, output = 'coef') %>%
-			  gather(key, value, -type, -est_name) %>%
-			  #unite(temp, type, id) %>%
-			  spread(type, value) %>%
-			  arrange(key) %>%
-			  mutate(id = as.numeric(as.factor(key))) %>%
-			  select(-key) %>%
-			  mutate(se = str_replace_all(se, "\\(|\\)", "")) %>%
-			  mutate_at(vars(coef, se), as.numeric)
+		latex_file <- file.path(root, 'tests', 'latex', 
+			'temp_regression.tex')
 
-			dec <- max(count_decimals(latex_coef$coef))
+		writeLines(latex_output, latex_file)
 
-			model_coef <-
-			  model_list %>%
-			  tibble() %>%
-			  rename(model = 1) %>%
-			  mutate(coef = map(model, coef_tibble), 
-			  	id = row_number()) %>%
-			  unnest(coef, .preserve = id) %>%
-			  select(est_name, coef = 3, se = 4, id) %>%
-			  filter(est_name %in% est_names) %>%
-			  mutate_if(is.double, funs(round(., digits = dec)))
-
-			expect_equal(model_coef, latex_coef)
-		
+		test_that("testing coefficient equivalence", {
+			count = 0
+			while (count<length(model_list)) {
+				count = count + 1
+				latex_coef <- read_latex(latex_file, output = 'coef') %>% 
+					filter(type=='coef') %>% 
+					select(-c(est_name, type)) %>% 
+					pull(count) %>% 
+					as.double()
+				model_coef <-  model_list[[count]] %>% 
+					summary() %>% 
+					coef() %>% 
+					.[-1,1] %>% 
+					as.double() %>% 
+					round(3)
+				if (length(model_coef) < length(latex_coef)) {
+					model_coef <-  model_list[[count]] %>% 
+						summary() %>% 
+						coef() %>% 
+						.[,1] %>% 
+						as.double() %>% 
+						round(3)
+				}
+				expect_equal(model_coef, latex_coef)
+			}
 		})
 
-my.summary <- summary(DATA$ids)
-data.frame(ids=names(my.summary), nums=my.summary)
+		test_that("testing standard error equivalence", {
+			count = 0
+			while (count<length(model_list)) {
+				count = count + 1
+				latex_se <- read_latex(latex_file, output = 'coef') %>% 
+					filter(type=='se') %>% 
+					select(-c(est_name, type)) %>% 
+					pull(count) %>% 
+					str_replace_all("\\)", '') %>%
+					str_replace_all("\\(", '') %>%
+					as.double()
+				model_se <-  model_list[[count]] %>% 
+					summary() %>% 
+					coef() %>% 
+					.[-1,2] %>% 
+					as.double() %>% 
+					round(3)
+				if (length(model_se) < length(latex_se)) {
+					model_se <-  model_list[[count]] %>% 
+						summary() %>% 
+						coef() %>% 
+						.[,2] %>% 
+						as.double() %>% 
+						round(3)
+				}
+				expect_equal(model_se, latex_se)
+			}
+		})
 
 		test_that("testing projected R^2 equivalence", {
 			adj_name <- regex("^adj", ignore_case = TRUE)
@@ -130,7 +148,7 @@ data.frame(ids=names(my.summary), nums=my.summary)
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_projected_R2 <- read_latex(latex_output, 
+				latex_projected_R2 <- read_latex(latex_file, 
 					output = 'stats') %>% 
 					filter(stats_name=='Proj. $R^2$') %>% 
 					select(-stats_name) %>% 
@@ -148,7 +166,7 @@ data.frame(ids=names(my.summary), nums=my.summary)
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_N <- read_latex(latex_output, output = 'stats') %>% 
+				latex_N <- read_latex(latex_file, output = 'stats') %>% 
 					filter(stats_name=='N') %>% 
 					select(-stats_name) %>% 
 					pull(count) %>% 
