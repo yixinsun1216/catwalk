@@ -1,12 +1,14 @@
+print('1')
 library(tidyverse)
+print('2')
 library(testthat)
+print('3')
 require(stats)
-library(modelr)
+print('4')
+print('5')
 library(lfe)
-library(broom)
 library(kableExtra)
 library(lmtest)
-library(rlang)
 
 #===========
 # read in
@@ -23,6 +25,10 @@ source(file.path(root, "R", "read_latex.R"))
 #===========
 # functions
 #===========
+
+count_decimals <- function(no){
+	nchar(gsub("(.*\\.)|(*$)", "", as.character(no)))
+}
 
 custom_expect_equal <- function(model_object, latex_object) {
 	act_model <- quasi_label(enquo(model_object))
@@ -75,19 +81,20 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
 					as.double()
+				decimals = max(count_decimals(latex_coef))
 				model_coef <-  model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
 					.[-1,1] %>% 
 					as.double() %>% 
-					round(3)
+					round(decimals)
 				if (length(model_coef) < length(latex_coef)) {
 					model_coef <-  model_list[[count]] %>% 
 						summary() %>% 
 						coef() %>% 
 						.[,1] %>% 
 						as.double() %>% 
-						round(3)
+						round(decimals)
 				}
 				expect_equal(model_coef, latex_coef)
 			}
@@ -104,19 +111,20 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					str_replace_all("\\)", '') %>%
 					str_replace_all("\\(", '') %>%
 					as.double()
+				decimals = max(count_decimals(latex_se))
 				model_se <-  model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
 					.[-1,2] %>% 
 					as.double() %>% 
-					round(3)
+					round(decimals)
 				if (length(model_se) < length(latex_se)) {
 					model_se <-  model_list[[count]] %>% 
 						summary() %>% 
 						coef() %>% 
 						.[,2] %>% 
 						as.double() %>% 
-						round(3)
+						round(decimals)
 				}
 				expect_equal(model_se, latex_se)
 			}
@@ -132,10 +140,11 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					select(-stats_name) %>% 
 					pull(count) %>% 
 					as.double()
+				decimals = max(count_decimals(latex_projected_R2))
 				model_projected_R2 <- model_list[[count]] %>% 
 					summary() %>% 
 					.$adj.r.squared %>% 
-					round(3)
+					round(decimals)
 				expect_equal(model_projected_R2, latex_projected_R2)
 			}
 		})
