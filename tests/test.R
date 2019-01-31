@@ -4,14 +4,16 @@ require(stats)
 library(lfe)
 library(kableExtra)
 library(lmtest)
+library(modelr)
+library(broom)
 
 #===========
 # read in
 #===========
 
 root <- getwd()
-while(basename(root) != "regtable") {
-  root <- dirname(root)
+while (basename(root) != 'regtable'){
+	root <- dirname(root)
 }
 
 source(file.path(root, "R", "regtable.R")) 
@@ -24,27 +26,41 @@ count_decimals <- function(no){
 	nchar(gsub("(.*\\.)|([0]*$)", "", as.character(no))) 
 }
 
-custom_expect_equal <- function(model_object, latex_object) {
-	act_model <- quasi_label(enquo(model_object))
-	act_model$n <- length(act_model$val)
-	act_model$name <- 'model object'
+count_decimals <- function(no){
+	nchar(gsub("(.*\\.)|(*$)", "", as.character(no)))
+}
 
-	act_latex <- quasi_label(enquo(latex_object))
-	act_latex$n <- length(act_latex$val)
-	act_latex$name <- 'latex object'
+custom_expect_equal <- function(model_object, latex_object, 
+	count, est = NULL) {
+	model <- quasi_label(enquo(model_object))
+	model$n <- length(model$val)
+	model$name <- 'model object'
 
-	expect(act_model$n == act_latex$n,
-	    sprintf("%s has %i numbers, but %s has %i numbers.", act_model$name, 
-	    	act_model$n, act_latex$name, act_latex$n)
+	latex <- quasi_label(enquo(latex_object))
+	latex$n <- length(latex$val)
+	latex$name <- 'latex object'
+
+	expect(model$n == latex$n,
+	    sprintf("%s has %i numbers, but %s has %i numbers.", model$name, 
+	    	model$n, latex$name, latex$n)
 	    )
 
-	for (i in 1:act_latex$n) {
-		expect(act_model$val[i] == act_latex$val[i],
-		    sprintf("The %s has a value of %f in position %i, 
-		    	but the %s has a value of %i in that position.
-		    	Difference: %f", act_model$name, 
-		    	act_model$val[i], i, act_latex$name, 
-		    	act_latex$val[i], act_model$val[i]-act_latex$val[i])
+	order <- c('1st', '2nd', '3rd', '4th', '5th', 
+		'6th', '7th', '8th', '9th', '10th')
+
+	for (i in 1:latex$n) {
+		expect(model$val[i] == latex$val[i],
+			ifelse(is.null(est), 
+		    sprintf("The %s %s has a value of %f, 
+		    	but the %s %s has a value of %i.
+		    	Difference: %f", order[count], model$name, 
+		    	model$val[i], order[count], latex$name, 
+		    	latex$val[i], model$val[i]-latex$val[i]), 
+		    sprintf("The %s %s has a value of %f for variable %s, 
+		    	but the %s %s has a value of %i for variable %s.
+		    	Difference: %f", order[count], model$name, 
+		    	model$val[i], est[i], order[count], latex$name, 
+		    	latex$val[i], est[i], model$val[i]-latex$val[i]))
 	    )
 	}
 }
@@ -60,8 +76,6 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					est_names = est_names, 
 					output_format = "latex", 
 					extra_rows = extra_rows)
-
-
 
 		test_that("testing coefficient equivalence", {
 			count = 0
@@ -92,7 +106,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 						as.double() %>% 
 						round(decimals)
 				}
-				expect_equal(model_coef, latex_coef)
+				custom_expect_equal(model_coef, latex_coef, count, est = est)
 			}
 		})
 
@@ -108,9 +122,8 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					str_replace_all("\\)", '') %>%
 					str_replace_all("\\(", '') %>%
 					as.double()
-
+        
 				decimals <- max(count_decimals(latex_se))
-
 				model_se <-  model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
@@ -126,7 +139,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 						as.double() %>% 
 						round(decimals)
 				}
-				expect_equal(model_se, latex_se)
+				custom_expect_equal(model_se, latex_se, count, est = est)
 			}
 		})
 
@@ -163,12 +176,13 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					as.double()
 
 				decimals <- max(count_decimals(latex_projected_R2))
-
 				model_projected_R2 <- model_list[[count]] %>% 
 					summary() %>% 
 					.$adj.r.squared %>% 
 					round(decimals)
-				expect_equal(model_projected_R2, latex_projected_R2)
+
+				custom_expect_equal(model_projected_R2, latex_projected_R2, 
+					count)
 			}
 		})
 
@@ -186,7 +200,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 				} else {
 					model_N <- model_list[[count]] %>% nobs()
 				}
-				expect_equal(model_N, latex_N)
+				custom_expect_equal(model_N, latex_N, count)
 			}
 		})
 	
@@ -216,6 +230,9 @@ felm_fits <- mtcars %>% fit_with(felm, formulas(~disp,
 model1 <- mtcars %>% 
 	felm(disp ~ drat + cyl , data = .)
 
+model1.1 <- mtcars %>% 
+	lm(disp ~ drat + cyl , data = .)
+
 model2 <- mtcars %>% 
 	rownames_to_column('company') %>% 
 	mutate(company = word(company)) %>% 
@@ -233,58 +250,65 @@ model3 <- mtcars %>%
 # 1 model, 1-5 ind. variables, lm
 
 test_model(list(lm_fits$one), 
-	"testing single lm model, one independent variable", 
+	"testing 1 lm model, 1 independent variable", 
 	est = 'drat')
 
 test_model(list(lm_fits$two), 
-	"testing single lm model, two independent variables", 
+	"testing 1 lm model, 2 independent variables", 
 	est = c('drat', 'cyl'))
 
 test_model(list(lm_fits$three), 
-	"testing single lm model, three independent variables", 
+	"testing 1 lm model, 3 independent variables", 
 	est = c('drat', 'cyl', 'drat:cyl'))
 
 test_model(list(lm_fits$four), 
-	"testing single lm model, four independent variables", 
+	"testing 1 lm model, 4 independent variables", 
 	est = c('drat', 'cyl', 'am', 'drat:cyl'))
 
 test_model(list(lm_fits$five), 
-	"testing single lm model, five independent variables", 
+	"testing 1 lm model, 5 independent variables", 
 	est = c('drat', 'cyl', 'am', 'vs', 'drat:cyl'))
 
 # 1 model, 1-5 ind. variables, felm
 
 test_model(list(felm_fits$one), 
-	"testing single felm model, one independent variable", 
+	"testing 1 felm model, 1 independent variable", 
 	est = 'drat')
 
 test_model(list(felm_fits$two), 
-	"testing single felm model, two independent variables", 
+	"testing 1 felm model, 2 independent variables", 
 	est = c('drat', 'cyl'))
 
 test_model(list(felm_fits$three), 
-	"testing single felm model, three independent variables", 
+	"testing 1 felm model, 3 independent variables", 
 	est = c('drat', 'cyl', 'drat:cyl'))
 
 test_model(list(felm_fits$four), 
-	"testing single felm model, four independent variables", 
+	"testing 1 felm model, 4 independent variables", 
 	est = c('drat', 'cyl', 'am', 'drat:cyl'))
 
 test_model(list(felm_fits$five), 
-	"testing single felm model, five independent variables", 
+	"testing 1 felm model, 5 independent variables", 
 	est = c('drat', 'cyl', 'am', 'vs', 'drat:cyl'))
 
 # 2 models, 2 ind. variables, felm
 
 test_model(list(model1, model2), 
-	"testing 2 felm model, two independent variables", 
+	"testing 2 felm models, 2 independent variables", 
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company"))) 
 
 # 3 models, 2 ind. variables, felm
 
 test_model(list(model1, model2, model3), 
-	"testing tripl felm model, two independent variables", 
+	"testing 3 felm models, 2 independent variables", 
+	est = c('drat', 'cyl'), 
+	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
+
+# 3 models, 2 ind. variables, lm/felm mix
+
+test_model(list(model1.1, model2, model3), 
+	"testing 3 felm models, 2 independent variables", 
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
 

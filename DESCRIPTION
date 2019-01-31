@@ -17,4 +17,6 @@ Imports:
     stats, 
     lfe, 
     janitor
+    modelr, 
+    broom
 RoxygenNote: 6.1.0
