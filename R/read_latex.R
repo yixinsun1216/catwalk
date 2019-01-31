@@ -10,10 +10,14 @@ library(readr)
 #===========
 # do stuff
 #===========
+split_vec <- function(vec, sep = 0) {
+      is.sep <- vec == sep
+      split(vec[!is.sep], cumsum(is.sep)[!is.sep])
+}
 
 read_latex <- function(latex_file, output = 'coef') {
   if(sum(str_detect(latex_file, "\n")) > 0){
-    latex <- 
+    latex_split <- 
       latex_file %>%
       paste(collapse = "") %>%
       str_split("\n") %>%
@@ -21,7 +25,7 @@ read_latex <- function(latex_file, output = 'coef') {
       .[. != ""] %>%
       split_vec("\\midrule")
   } else{
-    latex <- split_vec(latex_file, sep = "\\midrule")
+    latex_split <- split_vec(latex_file, sep = "\\midrule")
   }
   
   # IDEA: split up the latex output into the 4 main components:
@@ -30,14 +34,6 @@ read_latex <- function(latex_file, output = 'coef') {
   # 3. Extra lines
   # 4. summary stats
   # split into sections by "midrule"
-
-  split_vec <- function(vec, sep = 0) {
-      is.sep <- vec == sep
-      split(vec[!is.sep], cumsum(is.sep)[!is.sep])
-  }
-
-  latex_split <- split_vec(latex, sep = "\\midrule")
-
 
   header <- latex_split[[1]]
   coef <- latex_split[[2]]

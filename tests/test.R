@@ -21,9 +21,18 @@ source(file.path(root, "R", "read_latex.R"))
 # functions
 #===========
 count_decimals <- function(no){
-	(gsub("(.*\\.)|([0]*$)", "", as.character(no))) 
+	nchar(gsub("(.*\\.)|([0]*$)", "", as.character(no))) 
 }
 
+coef_tibble <- function(x){
+	output <- 
+	  x %>%
+	  summary %>%
+	  coef 
+	output <- 
+	  tibble(est_name = rownames(output)) %>% 
+	  bind_cols(as_tibble(output))
+}
 
 custom_expect_equal <- function(model_object, latex_object) {
 	act_model <- quasi_label(enquo(model_object))
@@ -62,31 +71,34 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					output_format = "latex", 
 					extra_rows = extra_rows)
 
+		if(is.null(est_names)) {est_names <- est}
+
 		test_that("testing coefficient equivalence", {
-			count = 0
-			while (count<length(model_list)) {
-				count = count + 1
-				latex_coef <- read_latex(latex_output, output = 'coef') %>% 
-					filter(type=='coef') %>% 
-					select(-c(est_name, type)) %>% 
-					pull(count) %>% 
-					as.double()
-				model_coef <-  model_list[[count]] %>% 
-					summary() %>% 
-					coef() %>% 
-					.[-1,1] %>% 
-					as.double() %>% 
-					round(3)
-				if (length(model_coef) < length(latex_coef)) {
-					model_coef <-  model_list[[count]] %>% 
-						summary() %>% 
-						coef() %>% 
-						.[,1] %>% 
-						as.double() %>% 
-						round(3)
-				}
-				expect_equal(model_coef, latex_coef)
-			}
+			latex_coef <- 
+			  read_latex(latex_output, output = 'coef') %>%
+			  gather(key, value, -type, -est_name) %>%
+			  spread(type, value) %>%
+			  arrange(key) %>%
+			  select(-key) %>%
+			  mutate(id = row_number()) %>%
+			  mutate(se = str_replace_all(se, "\\(|\\)", "")) %>%
+			  mutate_at(vars(coef, se), as.numeric)
+
+			dec <- max(count_decimals(latex_coef$coef))
+
+			model_coef <-
+			  model_list %>%
+			  tibble() %>%
+			  rename(model = 1) %>%
+			  mutate(coef = map(model, coef_tibble), 
+			  	id = row_number()) %>%
+			  unnest(coef, .preserve = id) %>%
+			  select(est_name, coef = 3, se = 4, id) %>%
+			  filter(est_name %in% est_names) %>%
+			  mutate_if(is.double, funs(round(., digits = dec)))
+
+			expect_equal(model_coef, latex_coef)
+		
 		})
 
 		test_that("testing standard error equivalence", {
