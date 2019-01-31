@@ -16,7 +16,7 @@ Imports:
     testthat, 
     stats, 
     lfe, 
-    janitor
+    janitor,
     modelr, 
     broom
 RoxygenNote: 6.1.0
