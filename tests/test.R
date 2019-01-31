@@ -73,14 +73,15 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 
 		if(is.null(est_names)) {est_names <- est}
 
-		test_that("testing coefficient equivalence", {
+		test_that("testing coefficient and se equivalence", {
 			latex_coef <- 
 			  read_latex(latex_output, output = 'coef') %>%
 			  gather(key, value, -type, -est_name) %>%
+			  #unite(temp, type, id) %>%
 			  spread(type, value) %>%
 			  arrange(key) %>%
+			  mutate(id = as.numeric(as.factor(key))) %>%
 			  select(-key) %>%
-			  mutate(id = row_number()) %>%
 			  mutate(se = str_replace_all(se, "\\(|\\)", "")) %>%
 			  mutate_at(vars(coef, se), as.numeric)
 
@@ -101,36 +102,31 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 		
 		})
 
-		test_that("testing standard error equivalence", {
-			count = 0
-			while (count<length(model_list)) {
-				count = count + 1
-				latex_se <- read_latex(latex_output, output = 'coef') %>% 
-					filter(type=='se') %>% 
-					select(-c(est_name, type)) %>% 
-					pull(count) %>% 
-					str_replace_all("\\)", '') %>%
-					str_replace_all("\\(", '') %>%
-					as.double()
-				model_se <-  model_list[[count]] %>% 
-					summary() %>% 
-					coef() %>% 
-					.[-1,2] %>% 
-					as.double() %>% 
-					round(3)
-				if (length(model_se) < length(latex_se)) {
-					model_se <-  model_list[[count]] %>% 
-						summary() %>% 
-						coef() %>% 
-						.[,2] %>% 
-						as.double() %>% 
-						round(3)
-				}
-				expect_equal(model_se, latex_se)
-			}
-		})
+my.summary <- summary(DATA$ids)
+data.frame(ids=names(my.summary), nums=my.summary)
 
 		test_that("testing projected R^2 equivalence", {
+			adj_name <- regex("^adj", ignore_case = TRUE)
+
+			latex_projected_R2 <- 
+			  read_latex(latex_output, output = 'stats') %>%
+			  filter(stats_name=='Proj. $R^2$') %>%
+			  gather(key, stats, -stats_name) %>%
+			  select(stats)
+
+			model_projected_R2 <-
+			  model_list %>%
+			  tibble() %>%
+			  rename(model = 1) %>%
+			  mutate(stats = map(model, function(x) unclass(summary(x))), 
+			  	stats_name = map(model, function(x) names(summary(x)))) %>%
+			  unnest(stats, stats_name) %>%
+			  filter(str_detect(stats_name, adj_name)) %>%
+			  mutate(stats = unlist(stats)) %>%
+			  select(stats)
+
+
+
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
@@ -253,7 +249,7 @@ test_model(list(felm_fits$five),
 # 2 models, 2 ind. variables, felm
 
 test_model(list(model1, model2), 
-	"testing dual felm model, two independent variables", 
+	"testing 2 felm model, two independent variables", 
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company"))) 
 
