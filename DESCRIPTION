@@ -17,5 +17,7 @@ Imports:
     stats, 
     lfe, 
     modelr, 
-    broom
+    broom, 
+    Formula, 
+    grf
 RoxygenNote: 6.1.0
