@@ -5,6 +5,7 @@ library(lfe)
 library(kableExtra)
 library(lmtest)
 library(modelr)
+library(broom)
 
 #===========
 # read in
