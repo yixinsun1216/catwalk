@@ -11,7 +11,7 @@ library(lmtest)
 
 # assume the root directory will always be the direct parent of 
 # the tests subdirectory 
-root <- dirname(root)
+root <- dirname(getwd())
 
 source(file.path(root, "R", "regtable.R")) 
 source(file.path(root, "R", "read_latex.R")) 
