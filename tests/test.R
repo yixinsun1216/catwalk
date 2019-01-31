@@ -18,13 +18,15 @@ while (basename(root) != 'regtable'){
 
 source(file.path(root, "R", "regtable.R")) 
 source(file.path(root, "R", "read_latex.R")) 
+source(file.path(root, "R", "random_forest_utils.R")) 
 
 #===========
 # functions
 #===========
 
 count_decimals <- function(no){
-	nchar(gsub("(.*\\.)|(*$)", "", as.character(no)))
+	decimals <- nchar(gsub("(.*\\.)|(*$)", "", as.character(no)))
+	return (decimals)
 }
 
 custom_expect_equal <- function(model_object, latex_object, 
@@ -186,16 +188,14 @@ lm_fits <- mtcars %>% fit_with(lm, formulas(~disp,
 		two = ~drat + cyl,
 		three = ~drat * cyl,
 		four = add_predictors(three, ~am), 
-		five = add_predictors(three, ~am, ~vs)
-		))
+		five = add_predictors(three, ~am, ~vs)))
 
 felm_fits <- mtcars %>% fit_with(felm, formulas(~disp,
 		one = ~drat, 
 		two = ~drat + cyl,
 		three = ~drat * cyl,
 		four = add_predictors(three, ~am), 
-		five = add_predictors(three, ~am, ~vs)
-		))
+		five = add_predictors(three, ~am, ~vs)))
 
 model1 <- mtcars %>% 
 	felm(disp ~ drat + cyl , data = .)
@@ -212,6 +212,16 @@ model3 <- mtcars %>%
 	rownames_to_column('company') %>% 
 	mutate(company = word(company)) %>% 
 	felm(disp ~ drat + cyl | company + gear, data = .)
+
+rf_model1 <-  mtcars %>% 
+	rownames_to_column('company') %>% 
+	mutate(company = word(company)) %>% 
+	rf_semipar(disp ~ drat | company + gear, .)
+
+rf_model2 <-  mtcars %>% 
+	rownames_to_column('company') %>% 
+	mutate(company = word(company)) %>% 
+	rf_semipar(disp ~ drat + cyl | company + gear, .)
 
 #===========
 # evaluate tests
@@ -282,3 +292,12 @@ test_model(list(model1.1, model2, model3),
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
 
+# 1 model, 1-2 ind. variable, random forest
+
+test_model(list(rf_model1), 
+	"testing 1 rf_semipar model, 1 independent variables", 
+	est = c('drat')) 
+
+test_model(list(rf_model2), 
+	"testing 1 rf_semipar model, 2 independent variables", 
+	est = c('drat', 'cyl')) 
