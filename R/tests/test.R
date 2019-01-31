@@ -70,7 +70,6 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				print(count)
 				latex_coef <- read_latex(latex_file, output = 'coef') %>% 
 					filter(type=='coef') %>% 
 					select(-c(est_name, type)) %>% 
@@ -90,8 +89,6 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 						as.double() %>% 
 						round(3)
 				}
-				print(latex_coef)
-				print(model_coef) 
 				expect_equal(model_coef, latex_coef)
 			}
 		})
