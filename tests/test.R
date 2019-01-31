@@ -1,25 +1,17 @@
-print('1')
 library(tidyverse)
-print('2')
 library(testthat)
-print('3')
 require(stats)
-print('4')
 library(lfe)
-print('5')
 library(kableExtra)
-print('6')
 library(lmtest)
-print('7')
 
 #===========
 # read in
 #===========
 
-root <- getwd()
-while(basename(root) != "regtable") {
-  root <- dirname(root)
-}
+# assume the root directory will always be the direct parent of 
+# the tests subdirectory 
+root <- dirname(root)
 
 source(file.path(root, "R", "regtable.R")) 
 source(file.path(root, "R", "read_latex.R")) 
