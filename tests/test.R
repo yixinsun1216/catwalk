@@ -9,12 +9,8 @@ library(lmtest)
 # read in
 #===========
 
-# assume the root directory will always be the direct parent of 
-# the tests subdirectory 
-root <- dirname(getwd())
-
-source(file.path(root, "R", "regtable.R")) 
-source(file.path(root, "R", "read_latex.R")) 
+source(file.path('main', "R", "regtable.R")) 
+source(file.path('main', "R", "read_latex.R")) 
 
 #===========
 # functions
