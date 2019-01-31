@@ -1,6 +1,7 @@
 library(tidyverse)
 library(knitr)
 library(readr)
+library(janitor)
 
 
 #===========
@@ -10,34 +11,32 @@ library(readr)
 #===========
 # do stuff
 #===========
+split_vec <- function(vec, sep = 0) {
+      is.sep <- vec == sep
+      split(vec[!is.sep], cumsum(is.sep)[!is.sep])
+}
 
 read_latex <- function(latex_file, output = 'coef') {
   if(sum(str_detect(latex_file, "\n")) > 0){
-    latex <- 
+    latex_file <- 
       latex_file %>%
       paste(collapse = "") %>%
       str_split("\n") %>%
-      pluck(1) %>%
-      .[. != ""] %>%
-      split_vec("\\midrule")
-  } else{
-    latex <- split_vec(latex_file, sep = "\\midrule")
-  }
-  
+      pluck(1) 
+  } 
+
+  latex_split <- 
+    latex_file %>%
+    str_replace_all("phantom\\{X\\}", "") %>%
+    .[. != ""] %>%
+    split_vec("\\midrule")
+
   # IDEA: split up the latex output into the 4 main components:
   # 1. Header
   # 2. Coefficients/se
   # 3. Extra lines
   # 4. summary stats
   # split into sections by "midrule"
-
-  split_vec <- function(vec, sep = 0) {
-      is.sep <- vec == sep
-      split(vec[!is.sep], cumsum(is.sep)[!is.sep])
-  }
-
-  latex_split <- split_vec(latex, sep = "\\midrule")
-
 
   header <- latex_split[[1]]
   coef <- latex_split[[2]]
@@ -76,8 +75,10 @@ read_latex <- function(latex_file, output = 'coef') {
       est_name = str_replace(est_name, "\\}", "")) %>%
     mutate_all(trimws) %>%
     mutate_all(funs(str_replace_all(., "\\\\", ""))) %>%
+    mutate_all(funs(if_else(. == "", NA_character_, .))) %>%
     mutate(type = if_else(is.na(est_name), "coef", "se")) %>%
-    fill(est_name, .direction = "up") 
+    fill(est_name, .direction = "up") %>%
+    remove_empty('cols')
 
   if (output=='coef') {
     return (coef)

@@ -33,6 +33,7 @@
 #' @importFrom rlang quo_name enquo
 #' @import dplyr
 #' @importFrom broom glance
+#' @importFrom lmtest coeftest
 
 # Main function
 #' @export regtable regtable_stack
