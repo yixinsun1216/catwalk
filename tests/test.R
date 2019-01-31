@@ -11,10 +11,13 @@ library(broom)
 # read in
 #===========
 
-print(getwd())
+root <- getwd()
+while (basename(root) != 'regtable'){
+	root <- dirname(root)
+}
 
-source(file.path("R", "regtable.R")) 
-source(file.path("R", "read_latex.R")) 
+source(file.path(root, "R", "regtable.R")) 
+source(file.path(root, "R", "read_latex.R")) 
 
 #===========
 # functions
@@ -61,7 +64,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					output_format = "latex", 
 					extra_rows = extra_rows)
 
-		latex_file <- file.path('tests', 'latex', 'temp_regression.tex')
+		latex_file <- file.path(root, 'tests', 'latex', 'temp_regression.tex')
 
 		writeLines(latex_output, latex_file)
 
