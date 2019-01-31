@@ -16,10 +16,6 @@ count_decimals <- function(no){
 	nchar(gsub("(.*\\.)|([0]*$)", "", as.character(no))) 
 }
 
-
-f <- list(formula(y ~ lag.quarterly.revenue + price.index))
-r <- list(lm, felm)
-
 # want a function that takes in a parsnip object, extracts coefficients
 # and dimensions, and compares it to the latex output
 regtable_test <- function(df, r, f, ...){
