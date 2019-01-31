@@ -4,6 +4,7 @@ require(stats)
 library(lfe)
 library(kableExtra)
 library(lmtest)
+library(modelr)
 
 #===========
 # read in
