@@ -61,7 +61,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					output_format = "latex", 
 					extra_rows = extra_rows)
 
-		latex_file <- file.path(root, 'R', 'tests', 'latex', 
+		latex_file <- file.path(root, 'tests', 'latex', 
 			'temp_regression.tex')
 
 		writeLines(latex_output, latex_file)
