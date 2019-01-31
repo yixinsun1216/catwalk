@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/main
+    working_directory: ~/regtable
     docker:
       - image: appsilon/ci-base:1.0
     steps:
