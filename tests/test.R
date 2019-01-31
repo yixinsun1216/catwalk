@@ -27,27 +27,37 @@ count_decimals <- function(no){
 	nchar(gsub("(.*\\.)|(*$)", "", as.character(no)))
 }
 
-custom_expect_equal <- function(model_object, latex_object) {
-	act_model <- quasi_label(enquo(model_object))
-	act_model$n <- length(act_model$val)
-	act_model$name <- 'model object'
+custom_expect_equal <- function(model_object, latex_object, 
+	count, est = NULL) {
+	model <- quasi_label(enquo(model_object))
+	model$n <- length(model$val)
+	model$name <- 'model object'
 
-	act_latex <- quasi_label(enquo(latex_object))
-	act_latex$n <- length(act_latex$val)
-	act_latex$name <- 'latex object'
+	latex <- quasi_label(enquo(latex_object))
+	latex$n <- length(latex$val)
+	latex$name <- 'latex object'
 
-	expect(act_model$n == act_latex$n,
-	    sprintf("%s has %i numbers, but %s has %i numbers.", act_model$name, 
-	    	act_model$n, act_latex$name, act_latex$n)
+	expect(model$n == latex$n,
+	    sprintf("%s has %i numbers, but %s has %i numbers.", model$name, 
+	    	model$n, latex$name, latex$n)
 	    )
 
-	for (i in 1:act_latex$n) {
-		expect(act_model$val[i] == act_latex$val[i],
-		    sprintf("The %s has a value of %f in position %i, 
-		    	but the %s has a value of %i in that position.
-		    	Difference: %f", act_model$name, 
-		    	act_model$val[i], i, act_latex$name, 
-		    	act_latex$val[i], act_model$val[i]-act_latex$val[i])
+	order <- c('1st', '2nd', '3rd', '4th', '5th', 
+		'6th', '7th', '8th', '9th', '10th')
+
+	for (i in 1:latex$n) {
+		expect(model$val[i] == latex$val[i],
+			ifelse(is.null(est), 
+		    sprintf("The %s %s has a value of %f, 
+		    	but the %s %s has a value of %i.
+		    	Difference: %f", order[count], model$name, 
+		    	model$val[i], order[count], latex$name, 
+		    	latex$val[i], model$val[i]-latex$val[i]), 
+		    sprintf("The %s %s has a value of %f for variable %s, 
+		    	but the %s %s has a value of %i for variable %s.
+		    	Difference: %f", order[count], model$name, 
+		    	model$val[i], est[i], order[count], latex$name, 
+		    	latex$val[i], est[i], model$val[i]-latex$val[i]))
 	    )
 	}
 }
@@ -92,7 +102,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 						as.double() %>% 
 						round(decimals)
 				}
-				expect_equal(model_coef, latex_coef)
+				custom_expect_equal(model_coef, latex_coef, count, est = est)
 			}
 		})
 
@@ -122,7 +132,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 						as.double() %>% 
 						round(decimals)
 				}
-				expect_equal(model_se, latex_se)
+				custom_expect_equal(model_se, latex_se, count, est = est)
 			}
 		})
 
@@ -141,7 +151,8 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					summary() %>% 
 					.$adj.r.squared %>% 
 					round(decimals)
-				expect_equal(model_projected_R2, latex_projected_R2)
+				custom_expect_equal(model_projected_R2, latex_projected_R2, 
+					count)
 			}
 		})
 
@@ -159,7 +170,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 				} else {
 					model_N <- model_list[[count]] %>% nobs()
 				}
-				expect_equal(model_N, latex_N)
+				custom_expect_equal(model_N, latex_N, count)
 			}
 		})
 	
