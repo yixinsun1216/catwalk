@@ -12,9 +12,18 @@ library(readr)
 #===========
 
 read_latex <- function(latex_file, output = 'coef') {
-
-  latex <- readLines(latex_file) %>% .[. != ""]
-
+  if(sum(str_detect(latex_file, "\n")) > 0){
+    latex <- 
+      latex_file %>%
+      paste(collapse = "") %>%
+      str_split("\n") %>%
+      pluck(1) %>%
+      .[. != ""] %>%
+      split_vec("\\midrule")
+  } else{
+    latex <- split_vec(latex_file, sep = "\\midrule")
+  }
+  
   # IDEA: split up the latex output into the 4 main components:
   # 1. Header
   # 2. Coefficients/se
