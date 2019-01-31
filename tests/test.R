@@ -20,6 +20,10 @@ source(file.path(root, "R", "read_latex.R"))
 #===========
 # functions
 #===========
+count_decimals <- function(no){
+	(gsub("(.*\\.)|([0]*$)", "", as.character(no))) 
+}
+
 
 custom_expect_equal <- function(model_object, latex_object) {
 	act_model <- quasi_label(enquo(model_object))
@@ -58,16 +62,11 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					output_format = "latex", 
 					extra_rows = extra_rows)
 
-		latex_file <- file.path(root, 'tests', 'latex', 
-			'temp_regression.tex')
-
-		writeLines(latex_output, latex_file)
-
 		test_that("testing coefficient equivalence", {
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_coef <- read_latex(latex_file, output = 'coef') %>% 
+				latex_coef <- read_latex(latex_output, output = 'coef') %>% 
 					filter(type=='coef') %>% 
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
@@ -94,7 +93,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_se <- read_latex(latex_file, output = 'coef') %>% 
+				latex_se <- read_latex(latex_output, output = 'coef') %>% 
 					filter(type=='se') %>% 
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
@@ -123,7 +122,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_projected_R2 <- read_latex(latex_file, 
+				latex_projected_R2 <- read_latex(latex_output, 
 					output = 'stats') %>% 
 					filter(stats_name=='Proj. $R^2$') %>% 
 					select(-stats_name) %>% 
@@ -141,7 +140,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_N <- read_latex(latex_file, output = 'stats') %>% 
+				latex_N <- read_latex(latex_output, output = 'stats') %>% 
 					filter(stats_name=='N') %>% 
 					select(-stats_name) %>% 
 					pull(count) %>% 
