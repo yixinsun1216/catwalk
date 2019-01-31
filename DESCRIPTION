@@ -15,5 +15,6 @@ Imports:
     lmtest, 
     testthat, 
     stats, 
-    lfe
+    lfe, 
+    janitor
 RoxygenNote: 6.1.0
