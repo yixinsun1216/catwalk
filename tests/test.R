@@ -11,6 +11,8 @@ library(broom)
 # read in
 #===========
 
+print(getwd())
+
 source(file.path("R", "regtable.R")) 
 source(file.path("R", "read_latex.R")) 
 
