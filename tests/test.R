@@ -5,10 +5,12 @@ library(testthat)
 print('3')
 require(stats)
 print('4')
-print('5')
 library(lfe)
+print('5')
 library(kableExtra)
+print('6')
 library(lmtest)
+print('7')
 
 #===========
 # read in
