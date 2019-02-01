@@ -346,3 +346,15 @@ test_model(list(rf_model3),
 	"testing 1 rf_semipar model, 3 independent variables", 
 	est = c('drat', 'cyl', 'drat:cyl')) 
 
+# 1 model, 2 ind. variables, 1 ommitted, lm
+test_model(list(lm_fits$two), 
+	"testing 1 lm model, 2 independent variables, only 1 kept", 
+	est = c('cyl'))
+
+# 1 model, 2-3 ind. variables, 1-2 ommitted, lm
+test_model(list(lm_fits$two, lm_fits$three), 
+	"testing 2 lm models, 2-3 independent variables, only 1 kept", 
+	est = c('cyl'), 
+	extra_rows = list("Interaction" = c("N", "Y")))
+
+
