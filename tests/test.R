@@ -92,19 +92,16 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
-					.[-1,1] %>% 
+					.[,1] 
+				if (length(model_coef)>1) {
+					model_coef <- 
+						model_coef %>% 
+						.[est] 
+				}
+				model_coef <- 
+					model_coef %>% 
 					as.double() %>% 
 					round(decimals)
-
-				if (length(model_coef) < length(latex_coef)) {
-					model_coef <-  
-						model_list[[count]] %>% 
-						summary() %>% 
-						coef() %>% 
-						.[,1] %>% 
-						as.double() %>% 
-						round(decimals)
-				}
 				custom_expect_equal(model_coef, latex_coef, count, est = est)
 			}
 		})
@@ -124,21 +121,23 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 					as.double()
         
 				decimals <- max(count_decimals(latex_se))
-				model_se <-  model_list[[count]] %>% 
+
+				model_se <-  
+					model_list[[count]] %>% 
 					summary() %>% 
 					coef() %>% 
-					.[-1,2] %>% 
+					.[,2]
+
+				if (length(model_se)>1) {
+					model_se <- 
+						model_se %>% 
+						.[est] 
+				}
+				model_se <- 
+					model_se %>% 
 					as.double() %>% 
 					round(decimals)
 
-				if (length(model_se) < length(latex_se)) {
-					model_se <-  model_list[[count]] %>% 
-						summary() %>% 
-						coef() %>% 
-						.[,2] %>% 
-						as.double() %>% 
-						round(decimals)
-				}
 				custom_expect_equal(model_se, latex_se, count, est = est)
 			}
 		})
@@ -162,8 +161,6 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			  filter(str_detect(stats_name, adj_name)) %>%
 			  mutate(stats = unlist(stats)) %>%
 			  select(stats)
-
-
 
 			count = 0
 			while (count<length(model_list)) {
@@ -335,7 +332,7 @@ test_model(list(model1.1, model2, rf_model2),
 # 1 model, 1-3 ind. variables, random forest
 
 test_model(list(rf_model1), 
-	"testing 1 rf_semipar model, 1 independent variables", 
+	"testing 1 rf_semipar model, 1 independent variable", 
 	est = c('drat')) 
 
 test_model(list(rf_model2), 
