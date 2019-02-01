@@ -3,20 +3,20 @@
 #' @description This routine creates Latex code, HTML code, and text tables for
 #' output of a regression summary
 #'
-#' @param ms one or more model objects that are compatible with the summary()
-#'    function
-#' @param est a character vector of the covariates to output
-#' @param est_names a character vector of labels for est
-#' @param mnames a character vector of labels for each model object in ms
-#' @param extra_rows a character vector additional information to display for
+#' @param ms A list of one or more model objects that are 
+#'    compatible with the summary() function
+#' @param est A character vector of the covariates to output
+#' @param est_names A character vector of labels for est
+#' @param mnames A character vector of labels for each model object in ms
+#' @param extra_rows A character vector additional information to display for
 #'    each model, such as fixed effects or controls.
-#' @param stats a character vector specifying which model statistics should be
+#' @param stats A character vector specifying which model statistics should be
 #'    kept in the output
-#' @param stats_names a character vector of labels for each object in stats
+#' @param stats_names A character vector of labels for each object in stats
 #' @param output_format A string passed to kable() that specifies the format of
 #'    the table output. The options are latex, html, markdown, pandoc, and rst.
 #'    The default is latex
-#' @param sig_stars logical indicating whether or not significant stars should
+#' @param sig_stars Logical indicating whether or not significant stars should
 #'    be added to the coefficients
 #' @param note A character string if a footnote is to be added to the end of the
 #'    table.
@@ -241,8 +241,8 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
 # stacks them together
 #' @export
 #' @rdname regtable
-regtable_stack <- function(final_tables, table_names = NULL, output_format = "latex",
-  note = NULL, header = NULL){
+regtable_stack <- function(final_tables, table_names = NULL, 
+  output_format = "latex", note = NULL, header = NULL){
 
   if(!is.null(table_names)){
     final_df <-
