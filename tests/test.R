@@ -310,3 +310,4 @@ test_model(list(model1.1, model2, model3),
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
 
+
