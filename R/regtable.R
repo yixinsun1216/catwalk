@@ -1,4 +1,4 @@
-#' @title Regression output from R regression output
+#' @title Format R regression output 
 #'
 #' @description This routine creates Latex code, HTML code, and text tables for
 #' output of a regression summary
@@ -20,8 +20,16 @@
 #'    be added to the coefficients
 #' @param note A character string if a footnote is to be added to the end of the
 #'    table.
-#'
-#'
+#' @examples
+#' height <- runif(100, 60, 78)
+#' dad_height <- runif(100, 66, 78)
+#' mom_height <- runif(100, 60, 72)
+#' 
+#' model <- lm(height ~ dad_height + mom_height)
+#' latex_output <- regtable(list(model), 
+#'    est = c('Dad Height', 'Mom Height'), 
+#'    output_format = "latex")
+#' 
 #' @importFrom magrittr %>%
 #' @importFrom tibble tibble as_tibble
 #' @importFrom purrr map_dfc map2_df reduce map2
@@ -34,17 +42,9 @@
 #' @import dplyr
 #' @importFrom broom glance
 #' @importFrom lmtest coeftest
+#' @name regtable
+NULL
 
-# Main function
-#' @export regtable regtable_stack
-
-# function for creating significant stars
-significance <- function(x){
-  symp <- symnum(x, corr = FALSE, na = FALSE,
-                 cutpoints = c(0, 0.01, 0.05, 0.1, 1),
-                 symbols = c("$^{***}$", "$^{**}$", "$^{*}$", "$^{}$"))
-  return(as.character(c(symp)))
-}
 
 # function for creating significant stars
 significance <- function(x){
@@ -132,6 +132,8 @@ get_stats <- function(m, stats, n_obs){
 }
 
 # Main regtable function ------------------------------------------------------
+#' @export
+#' @rdname regtable
 regtable <- function(ms, est, mnames = NULL, est_names = NULL,
                      extra_rows = NULL, se_fun = vcov,
                      stats = c("r.squared", "adj.r.squared"),
@@ -237,6 +239,8 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
 # regtable stack ------------------------------------------------------------
 # function that takes several regtable outputs (in dataframe format) and
 # stacks them together
+#' @export
+#' @rdname regtable
 regtable_stack <- function(final_tables, table_names = NULL, output_format = "latex",
   note = NULL, header = NULL){
 
