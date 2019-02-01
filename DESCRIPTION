@@ -18,5 +18,7 @@ Imports:
     lfe, 
     janitor,
     modelr, 
-    broom
+    broom, 
+    Formula, 
+    grf
 RoxygenNote: 6.1.0
