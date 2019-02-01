@@ -348,10 +348,21 @@ test_model(list(lm_fits$two),
 	"testing 1 lm model, 2 independent variables, only 1 kept", 
 	est = c('cyl'))
 
-# 1 model, 2-3 ind. variables, 1-2 ommitted, lm
+# 2 models, 2-3 ind. variables, 1-2 ommitted, lm
 test_model(list(lm_fits$two, lm_fits$three), 
 	"testing 2 lm models, 2-3 independent variables, only 1 kept", 
 	est = c('cyl'), 
 	extra_rows = list("Interaction" = c("N", "Y")))
 
+# 2 models, 2-3 ind. variables, 1-2 ommitted, lm/rf mix
+test_model(list(lm_fits$two, rf_model2), 
+	"testing 2 models, lm/rf mix, 2 independent variables, only 1 kept", 
+	est = c('cyl'), 
+	extra_rows = list("Method" = c("lm", "rf")))
+
+# 1 model, 1 ind. variables, rename variable, lm
+test_model(list(lm_fits$one), 
+	"testing 1 lm model, 1 independent variable", 
+	est = 'drat', 
+	est_names = c('Drat Rename'))
 
