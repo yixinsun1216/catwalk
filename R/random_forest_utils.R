@@ -1,3 +1,36 @@
+#' @title Random Forest Helper Functions
+#'
+#' @description Estimate a partially linear model using the robinson 1988 methodology using
+#' random forests as the nonparametric regression technology.  The formula
+#' structure has three parts: y ~ x | z.  y is the outcome, x are the linear
+#' variables and z are the non-parametric variables.  Tt *should* work with
+#' whatever transformations you throw at it, but note that the resulting lm
+#' object it returns may have column names that are slightly different if you do
+#' transformations.  For example, the variables in the output of a model
+#' drilled ~ Auction + log(acres) | Cent_Lat + Cent_Long + EffDate will be
+#' Auction and *log_acres_*.  ALSO: if you put something more complicated in,
+#' like, say, a call to bs() from the splines package, you are going to get
+#' pretty crazy names, but it should still work.
+#'
+#' @param formula The regression formula to evaluate
+#' @param data The dataframe that contains all the variables used in the formula
+
+#' @examples
+#' height <- runif(100, 60, 78)
+#' dad_height <- runif(100, 66, 78)
+#' mom_height <- runif(100, 60, 72)
+#' df <- tibble(height = height, dad_height = dad_height, 
+#'    mom_height = mom_height)
+#' 
+#' model <- rf_semipar(height ~ dad_height | mom_height, data = df)
+#'  
+#' @import tidyverse
+#' @import Formula
+#' @import grf
+#' @name rf_semipar
+NULL
+
+
 library(tidyverse)
 library(Formula)
 library(grf)
@@ -142,6 +175,8 @@ regression_forest_resid2 <- function(f, d, ...) {
 # like, say, a call to bs() from the splines package, you are going to get
 # pretty crazy names, but it should still work.
 
+#' @export
+#' @rdname rf_semipar 
 rf_semipar <- function(formula, data, ...) {
   # step 0: ensure fm has no intercept in the parametric part
   formula <-

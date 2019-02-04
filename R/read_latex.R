@@ -1,32 +1,56 @@
+#' @title Read latex output into R
+#'
+#' @description This function reads in Latex code of a regression summary into R
+#'
+#' @param latex_output The latex code to be converted into R objects
+#' @param output A character vector specifying which type of regression output 
+#' should be converted to an R object. Options are 'coef', 'stats', and 'extra'
+
+#' @examples
+#' height <- runif(100, 60, 78)
+#' dad_height <- runif(100, 66, 78)
+#' mom_height <- runif(100, 60, 72)
+#' 
+#' model <- lm(height ~ dad_height + mom_height)
+#' latex_output <- regtable(list(model), 
+#'    est = c('dad_height', 'mom_height'), 
+#'    output_format = "latex")
+#' 
+#' latex_coef <- read_latex(latex_output, output = 'coef')
+#' 
+#' @import tidyverse
+#' @import knitr
+#' @import readr
+#' @import janitor
+#' @name read_latex
+NULL
+
 library(tidyverse)
 library(knitr)
 library(readr)
 library(janitor)
 
-
 #===========
 # read latex
-#===========
-
-#===========
-# do stuff
 #===========
 split_vec <- function(vec, sep = 0) {
       is.sep <- vec == sep
       split(vec[!is.sep], cumsum(is.sep)[!is.sep])
 }
 
-read_latex <- function(latex_file, output = 'coef') {
-  if(sum(str_detect(latex_file, "\n")) > 0){
-    latex_file <- 
-      latex_file %>%
+#' @export
+#' @rdname read_latex
+read_latex <- function(latex_output, output = 'coef') {
+  if(sum(str_detect(latex_output, "\n")) > 0){
+    latex_output <- 
+      latex_output %>%
       paste(collapse = "") %>%
       str_split("\n") %>%
       pluck(1) 
   } 
 
   latex_split <- 
-    latex_file %>%
+    latex_output %>%
     str_replace_all("phantom\\{X\\}", "") %>%
     .[. != ""] %>%
     split_vec("\\midrule")
