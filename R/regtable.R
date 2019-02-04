@@ -34,6 +34,7 @@
 #' @import dplyr
 #' @importFrom broom glance
 #' @importFrom lmtest coeftest
+NULL 
 
 # Main function
 #' @export regtable regtable_stack

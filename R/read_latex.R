@@ -3,6 +3,7 @@ library(knitr)
 library(readr)
 library(janitor)
 
+#' @export read_latex
 
 #===========
 # read latex
