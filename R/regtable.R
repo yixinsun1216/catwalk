@@ -308,3 +308,10 @@ regtable_stack <- function(final_tables, table_names = NULL, output_format = "la
 
 
 
+
+
+
+# summary stats 
+# pass in list of summary stats as it is called in the model, as well 
+# as the name we want to output
+# What happens when we want to output different statistics for different models? list of lists
