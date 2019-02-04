@@ -2,6 +2,8 @@ library(tidyverse)
 library(Formula)
 library(grf)
 
+#' @export rf_semipar
+
 #===========================================================================
 # RANDOM FOREST HELPER FUNCTIONS
 #===========================================================================
