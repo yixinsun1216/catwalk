@@ -240,7 +240,8 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
   if(output_format == "latex"){
     final_table <-
       final_table %>%
-      row_spec(2 * length(est), extra_latex_after = "\\midrule") %>%
+      row_spec(2 * max(map_dbl(est, length)), 
+        extra_latex_after = "\\midrule") %>%
       row_spec(row_spec_no, extra_latex_after = "\\midrule") %>%
       collapse_rows(columns = 1, latex_hline = "none")
 

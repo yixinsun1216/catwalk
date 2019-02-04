@@ -12,7 +12,7 @@ library(broom)
 #===========
 
 root <- getwd()
-while (basename(root) != 'regtable'){
+while (basename(root) != 'catwalk'){
 	root <- dirname(root)
 }
 
