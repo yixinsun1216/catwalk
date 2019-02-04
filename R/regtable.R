@@ -27,7 +27,7 @@
 #' 
 #' model <- lm(height ~ dad_height + mom_height)
 #' latex_output <- regtable(list(model), 
-#'    est = c('Dad Height', 'Mom Height'), 
+#'    est = c('dad_height', 'mom_height'), 
 #'    output_format = "latex")
 #' 
 #' @importFrom magrittr %>%

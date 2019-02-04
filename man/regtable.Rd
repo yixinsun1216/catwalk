@@ -15,28 +15,28 @@ regtable_stack(final_tables, table_names = NULL,
   output_format = "latex", note = NULL, header = NULL)
 }
 \arguments{
-\item{ms}{one or more model objects that are compatible with the summary()
-function}
+\item{ms}{A list of one or more model objects that are 
+compatible with the summary() function}
 
-\item{est}{a character vector of the covariates to output}
+\item{est}{A character vector of the covariates to output}
 
-\item{mnames}{a character vector of labels for each model object in ms}
+\item{mnames}{A character vector of labels for each model object in ms}
 
-\item{est_names}{a character vector of labels for est}
+\item{est_names}{A character vector of labels for est}
 
-\item{extra_rows}{a character vector additional information to display for
+\item{extra_rows}{A character vector additional information to display for
 each model, such as fixed effects or controls.}
 
-\item{stats}{a character vector specifying which model statistics should be
+\item{stats}{A character vector specifying which model statistics should be
 kept in the output}
 
-\item{stats_names}{a character vector of labels for each object in stats}
+\item{stats_names}{A character vector of labels for each object in stats}
 
 \item{output_format}{A string passed to kable() that specifies the format of
 the table output. The options are latex, html, markdown, pandoc, and rst.
 The default is latex}
 
-\item{sig_stars}{logical indicating whether or not significant stars should
+\item{sig_stars}{Logical indicating whether or not significant stars should
 be added to the coefficients}
 
 \item{note}{A character string if a footnote is to be added to the end of the
@@ -47,11 +47,13 @@ This routine creates Latex code, HTML code, and text tables for
 output of a regression summary
 }
 \examples{
-require(stats)
-library(tidyverse)
-model <- mtcars \%>\% lm(disp ~ drat + cyl, data = .)
+height <- runif(100, 60, 78)
+dad_height <- runif(100, 66, 78)
+mom_height <- runif(100, 60, 72)
+
+model <- lm(height ~ dad_height + mom_height)
 latex_output <- regtable(list(model), 
-   est = c('drat', 'cyl'), 
+   est = c('dad_height', 'mom_height'), 
    output_format = "latex")
 
 }
