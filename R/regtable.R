@@ -1,27 +1,35 @@
-#' @title Regression output from R regression output
+#' @title Format R regression output 
 #'
 #' @description This routine creates Latex code, HTML code, and text tables for
 #' output of a regression summary
 #'
-#' @param ms one or more model objects that are compatible with the summary()
-#'    function
-#' @param est a character vector of the covariates to output
-#' @param est_names a character vector of labels for est
-#' @param mnames a character vector of labels for each model object in ms
-#' @param extra_rows a character vector additional information to display for
+#' @param ms A list of one or more model objects that are 
+#'    compatible with the summary() function
+#' @param est A character vector of the covariates to output
+#' @param est_names A character vector of labels for est
+#' @param mnames A character vector of labels for each model object in ms
+#' @param extra_rows A character vector additional information to display for
 #'    each model, such as fixed effects or controls.
-#' @param stats a character vector specifying which model statistics should be
+#' @param stats A character vector specifying which model statistics should be
 #'    kept in the output
-#' @param stats_names a character vector of labels for each object in stats
+#' @param stats_names A character vector of labels for each object in stats
 #' @param output_format A string passed to kable() that specifies the format of
 #'    the table output. The options are latex, html, markdown, pandoc, and rst.
 #'    The default is latex
-#' @param sig_stars logical indicating whether or not significant stars should
+#' @param sig_stars Logical indicating whether or not significant stars should
 #'    be added to the coefficients
 #' @param note A character string if a footnote is to be added to the end of the
 #'    table.
-#'
-#'
+#' @examples
+#' height <- runif(100, 60, 78)
+#' dad_height <- runif(100, 66, 78)
+#' mom_height <- runif(100, 60, 72)
+#' 
+#' model <- lm(height ~ dad_height + mom_height)
+#' latex_output <- regtable(list(model), 
+#'    est = c('dad_height', 'mom_height'), 
+#'    output_format = "latex")
+#' 
 #' @importFrom magrittr %>%
 #' @importFrom tibble tibble as_tibble
 #' @importFrom purrr map_dfc map2_df reduce map2
@@ -34,18 +42,9 @@
 #' @import dplyr
 #' @importFrom broom glance
 #' @importFrom lmtest coeftest
-NULL 
+#' @name regtable
+NULL
 
-# Main function
-#' @export regtable regtable_stack
-
-# function for creating significant stars
-significance <- function(x){
-  symp <- symnum(x, corr = FALSE, na = FALSE,
-                 cutpoints = c(0, 0.01, 0.05, 0.1, 1),
-                 symbols = c("$^{***}$", "$^{**}$", "$^{*}$", "$^{}$"))
-  return(as.character(c(symp)))
-}
 
 # function for creating significant stars
 significance <- function(x){
@@ -133,6 +132,8 @@ get_stats <- function(m, stats, n_obs){
 }
 
 # Main regtable function ------------------------------------------------------
+#' @export
+#' @rdname regtable
 regtable <- function(ms, est, mnames = NULL, est_names = NULL,
                      extra_rows = NULL, se_fun = vcov,
                      stats = c("r.squared", "adj.r.squared"),
@@ -238,8 +239,10 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
 # regtable stack ------------------------------------------------------------
 # function that takes several regtable outputs (in dataframe format) and
 # stacks them together
-regtable_stack <- function(final_tables, table_names = NULL, output_format = "latex",
-  note = NULL, header = NULL){
+#' @export
+#' @rdname regtable
+regtable_stack <- function(final_tables, table_names = NULL, 
+  output_format = "latex", note = NULL, header = NULL){
 
   if(!is.null(table_names)){
     final_df <-
