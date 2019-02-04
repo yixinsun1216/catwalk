@@ -322,6 +322,7 @@ test_model(list(model1.1, model2, model3),
 	est = c('drat', 'cyl'), 
 	extra_rows = list("FE" = c("None", "Company", "Company + Gear"))) 
 
+
 # 3 models, 2 ind. variables, lm/felm/rf mix
 
 test_model(list(model1.1, model2, rf_model2), 
