@@ -128,6 +128,7 @@ get_stats <- function(m, stat1, stats_name, mnames, n_obs){
   stats_out <- glance(m)
 
   if(!is.null(stat1)) stats_out <- select(stats_out, one_of(stat1))
+  if(is.null(stats_name)) stats_name <- colnames(stats_out)
   
   stats_out <-
     stats_out %>%
