@@ -5,21 +5,33 @@
 #'
 #' @param ms A list of one or more model objects that are 
 #'    compatible with the summary() function
-#' @param est A character vector of the covariates to output
-#' @param est_names A character vector of labels for est
+#' @param est A character vector of the covariates to output. To output 
+#'    different coefficients for different models, pass in est as a list, where
+#'    est[[i]] specifies the covariates to output for ms[[i]]. 
+#' @param est_names A character vector of labels for est. If outputting
+#'    different covariates for different models, pass in est_names as a list, 
+#'    where est_names[[i]] specifies the names for est[[i]]. 
 #' @param mnames A character vector of labels for each model object in ms
 #' @param extra_rows A character vector additional information to display for
 #'    each model, such as fixed effects or controls.
 #' @param stats A character vector specifying which model statistics should be
-#'    kept in the output
-#' @param stats_names A character vector of labels for each object in stats
+#'    kept in the output. The names of the statistics should match variable names
+#'    created by \code{\link[broom:glance]{glance}} (r.squared, adj.r.squared, 
+#'    sigma, p.value). To output different summary statistics for different 
+#'    models, create a list of length(ms), where stats[[i]] specifies the 
+#'    summary statistics for ms[[i]]. 
+#' @param stats_names A character vector of labels for each object in stats. If 
+#'    outputting different summary statistics for different models, pass in
+#'    stats_names as a list, where stats_names[[i]] specifies the names for
+#'    stats[[i]].
 #' @param output_format A string passed to kable() that specifies the format of
 #'    the table output. The options are latex, html, markdown, pandoc, and rst.
-#'    The default is latex
+#'    The default is latex.
 #' @param sig_stars Logical indicating whether or not significant stars should
-#'    be added to the coefficients
+#'    be added to the coefficients.
 #' @param note A character string if a footnote is to be added to the end of the
 #'    table.
+#' 
 #' @examples
 #' height <- runif(100, 60, 78)
 #' dad_height <- runif(100, 66, 78)
@@ -65,12 +77,8 @@ get_tau <- function(m, colname, se_fun, decimals, est, est_names,
   colname1 <- quo_name(enquo(colname))
 
   # extract coefficients and standard errors
-  if (is.null(se_fun)) {
-    output <- coeftest(m)
-  } else {
-    output <- coeftest(m, se_fun(m, ...))
-  }
-
+  output <- coeftest(m, se_fun(m, ...))
+  
   # add significant stars if sig_stars == TRUE
   output <-
     output %>%
@@ -116,19 +124,27 @@ get_tau <- function(m, colname, se_fun, decimals, est, est_names,
 
 
 # Extract summary statistics from model --------------------------------------
-get_stats <- function(m, stats, n_obs){
+get_stats <- function(m, stat1, stats_name, mnames, n_obs){
+  stats_out <- glance(m)
+
+  if(!is.null(stat1)) stats_out <- select(stats_out, one_of(stat1))
+  
   stats_out <-
-    glance(m) %>%
-    select(one_of(stats)) %>%
+    stats_out %>%
     t() %>%
     round(., 3) %>%
     format(., nsmall = 3, big.mark = ",") %>%
     str_replace_all(., ".000$", "") %>%
     trimws
 
-  if(n_obs) stats_out <- c(format(length(fitted(m)), big.mark = ","), stats_out)
-
-  return(stats_out)
+  if(n_obs){
+    stats_out <- c(format(length(fitted(m)), big.mark = ","), stats_out) 
+    stats_out <- bind_cols(!!mnames := stats_out, term = c("N", stats_name))
+  } else{
+    stats_out <- bind_cols(!!mnames := stats_out, term = stats_name)
+  }
+ 
+  return(as_tibble(stats_out))
 }
 
 # Main regtable function ------------------------------------------------------
@@ -136,8 +152,8 @@ get_stats <- function(m, stats, n_obs){
 #' @rdname regtable
 regtable <- function(ms, est, mnames = NULL, est_names = NULL,
                      extra_rows = NULL, se_fun = vcov,
-                     stats = c("r.squared", "adj.r.squared"),
-                     stats_names = c("$R^2$", "Proj. $R^2$"),
+                     stats = NULL,
+                     stats_names = NULL,
                      n_obs = TRUE,
                      output_format = "latex",
                      header = NULL,
@@ -150,24 +166,25 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
   if(is.null(decimals)) decimals <- rep(3, length(ms))
 
   # create section of table housing stats such as N, R^2 and Projected R^2
+  if(!is.list(stats)){ stats <- list(stats)}
+  if(!is.list(stats_names)){ stats_names <- list(stats_names)}
+  if(!is.list(n_obs)){n_obs <- list(n_obs)}
+
   statstable <-
-    ms %>%
-    map_dfc(function(x) get_stats(x, stats, n_obs)) %>%
-    setNames(mnames) %>%
+    pmap(list(ms, stats, stats_names, mnames, n_obs), get_stats) %>%
+    reduce(full_join, by = "term") %>%
+    select(term, everything()) %>%
     mutate(type = "")
-
-  if(n_obs){
-    statstable <- mutate(statstable, term = c("N", stats_names))
-  } else {statstable <- mutate(statstable, term = stats_names)}
-
 
   # create section of table housing coefficients and standard error
   if(!is.list(se_fun)) se_fun <- list(se_fun)
+  if(!is.list(est)) est <- list(est)
+  if(!is.list(est_names)) est_names <- list(est_names)
 
   coef_table <-
-    pmap(list(ms, mnames, se_fun, decimals),
-         get_tau, est, est_names, sig_stars, ...) %>%
-    reduce(inner_join)
+    pmap(list(ms, mnames, se_fun, decimals, est, est_names),
+         get_tau, sig_stars, ...) %>%
+    reduce(full_join)
 
   # replace NA and (NA) with spaces in Latex Tables
   if(output_format == "latex") {
@@ -205,8 +222,8 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
   }
 
   final_table <-
-    final_table <-
     bind_rows(coef_table, extras, statstable) %>%
+    mutate_all(funs(if_else(is.na(.), "", .))) %>%
     select(-type) %>%
     rename(` ` = term)  %>%
     kable(format = output_format,
