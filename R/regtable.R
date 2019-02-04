@@ -153,8 +153,8 @@ get_stats <- function(m, stat1, stats_name, mnames, n_obs){
 #' @rdname regtable
 regtable <- function(ms, est, mnames = NULL, est_names = NULL,
                      extra_rows = NULL, se_fun = vcov,
-                     stats = NULL,
-                     stats_names = NULL,
+                     stats = c("r.squared", "adj.r.squared"),
+                     stats_names = c("$R^2$", "Proj. $R^2$"),
                      n_obs = TRUE,
                      output_format = "latex",
                      header = NULL,
