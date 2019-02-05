@@ -206,7 +206,7 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
       rename_all(~ mnames) %>%
       mutate(type = "",
              term = names(extra_rows))
-    row_spec_no <- length(extra_rows) + 2 * length(est)
+    row_spec_no <- length(extra_rows) + 2 * max(map_dbl(est, length))
 
   } else {
     extras <- NULL
