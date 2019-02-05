@@ -2,7 +2,6 @@
 % Please edit documentation in R/regtable.R
 \name{regtable}
 \alias{regtable}
-\alias{regtable_stack}
 \title{Format R regression output}
 \usage{
 regtable(ms, est, mnames = NULL, est_names = NULL, extra_rows = NULL,
@@ -10,34 +9,48 @@ regtable(ms, est, mnames = NULL, est_names = NULL, extra_rows = NULL,
   stats_names = c("$R^2$", "Proj. $R^2$"), n_obs = TRUE,
   output_format = "latex", header = NULL, sig_stars = FALSE,
   decimals = NULL, note = NULL, ...)
-
-regtable_stack(final_tables, table_names = NULL,
-  output_format = "latex", note = NULL, header = NULL)
 }
 \arguments{
 \item{ms}{A list of one or more model objects that are 
 compatible with the summary() function}
 
-\item{est}{A character vector of the covariates to output}
+\item{est}{A character vector of the covariates to output. To output 
+different coefficients for different models, pass in est as a list, where
+est[[i]] specifies the covariates to output for ms[[i]].}
 
 \item{mnames}{A character vector of labels for each model object in ms}
 
-\item{est_names}{A character vector of labels for est}
+\item{est_names}{A character vector of labels for est. If outputting
+different covariates for different models, pass in est_names as a list, 
+where est_names[[i]] specifies the names for est[[i]].}
 
 \item{extra_rows}{A character vector additional information to display for
 each model, such as fixed effects or controls.}
 
 \item{stats}{A character vector specifying which model statistics should be
-kept in the output}
+kept in the output. The names of the statistics should match variable names
+created by \code{\link[broom:glance]{glance}} (r.squared, adj.r.squared, 
+sigma, p.value). To output different summary statistics for different 
+models, create a list of length(ms), where stats[[i]] specifies the 
+summary statistics for ms[[i]].}
 
-\item{stats_names}{A character vector of labels for each object in stats}
+\item{stats_names}{A character vector of labels for each object in stats. If 
+outputting different summary statistics for different models, pass in
+stats_names as a list, where stats_names[[i]] specifies the names for
+stats[[i]].}
 
 \item{output_format}{A string passed to kable() that specifies the format of
 the table output. The options are latex, html, markdown, pandoc, and rst.
-The default is latex}
+The default is latex. Additionally, passing in "df" will output a 
+dataframe version of the table, which can be used with regtable_stack()
+to create a table with multiple regression summaries.}
+
+\item{header}{A character vector to be passed into 
+\code{\link[kableExtra:add_header_above]{add_header_above}} that creates
+a new header row. This should have length equal to ms from regtable()}
 
 \item{sig_stars}{Logical indicating whether or not significant stars should
-be added to the coefficients}
+be added to the coefficients.}
 
 \item{note}{A character string if a footnote is to be added to the end of the
 table.}
@@ -47,13 +60,26 @@ This routine creates Latex code, HTML code, and text tables for
 output of a regression summary
 }
 \examples{
-height <- runif(100, 60, 78)
-dad_height <- runif(100, 66, 78)
-mom_height <- runif(100, 60, 72)
+# create covariates
+x1 <- rnorm(1000)
+x2 <- rnorm(length(x1))
 
-model <- lm(height ~ dad_height + mom_height)
-latex_output <- regtable(list(model), 
-   est = c('dad_height', 'mom_height'), 
-   output_format = "latex")
+## fixed effects
+fe <- factor(sample(20, length(x1), replace=TRUE))
 
+## effects for fe
+fe_effs <- rnorm(nlevels(fe))
+
+## creating left hand side y
+u <- rnorm(length(x1))
+y <- 2 * x1 + x2 + fe_effs[fe] + u
+
+m1 <- felm(y ~ x1 + x2 | fe)
+m2 <- glm(y ~ x1 + x2)
+
+
+regtable(list(m1, m2), list("x1", c("x1", "x2")), 
+         stats = list(c("adj.r.squared"), c("AIC")),
+         stats_names = list(c("$Adj R^2$"), c("AIC")), 
+         sig_stars = TRUE, output_format = "rst")
 }

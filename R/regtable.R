@@ -41,6 +41,7 @@
 #' # create covariates
 #' x1 <- rnorm(1000)
 #' x2 <- rnorm(length(x1))
+#' 
 #' ## fixed effects
 #' fe <- factor(sample(20, length(x1), replace=TRUE))
 #' 
@@ -51,11 +52,11 @@
 #' u <- rnorm(length(x1))
 #' y <- 2 * x1 + x2 + fe_effs[fe] + u
 #' 
-#' m1 <- felm(y ~ x1 + x2 + fe)
+#' m1 <- felm(y ~ x1 + x2 | fe)
 #' m2 <- glm(y ~ x1 + x2)
 #' 
 #' 
-#' regtable(list(m1, m2), list("x1", c("x1", "x2")), 
+#' regtable(list(m1, m2), est = list("x1", c("x1", "x2")), 
 #'          stats = list(c("adj.r.squared"), c("AIC")),
 #'          stats_names = list(c("$Adj R^2$"), c("AIC")), 
 #'          sig_stars = TRUE, output_format = "rst")
@@ -232,12 +233,17 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
   }
 
   # bind together the regression coefficients, stats, and extra lines
-  if(output_format == "df"){
+ if(output_format == "df"){
     final_table <-
       mutate(coef_table, part = "coef") %>%
-      bind_rows(mutate(extras, part = "extra")) %>%
-      bind_rows(mutate(statstable, part = "stats"))
-    return(final_table)
+      bind_rows(mutate(statstable, part = "stats")) 
+
+    if(!is.null(extras)){
+      final_tables <-
+        final_tables %>%
+        bind_rows(mutate(extras, part = "extra"))
+    }
+    return(list(output = final_table, model_names = mnames)) 
   }
 
   final_table <-
@@ -263,7 +269,7 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
       row_spec(row_spec_no, extra_latex_after = "\\midrule") %>%
       collapse_rows(columns = 1, latex_hline = "none")
 
-    # ridiculous hack to get latex \ back in my phantoms...
+    # ridiculous hack to get latex \ back in phantoms
     final_table <-
       final_table %>%
       str_replace_all(fixed("phantom{X}"), "\\phantom{X}")
