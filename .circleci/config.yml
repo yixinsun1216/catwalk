@@ -1,7 +1,7 @@
 version: 2
 jobs:
   equivalence_tests:
-    working_directory: ~/regtable
+    working_directory: ~/catwalk
     docker:
       - image: appsilon/ci-base:1.0
     steps:

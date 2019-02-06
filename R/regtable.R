@@ -1,35 +1,68 @@
 #' @title Format R regression output 
 #'
-#' @description This routine creates Latex code, HTML code, and text tables for
-#' output of a regression summary
+#' @description This routine creates Latex code, HTML code, and text tables that
+#' present regression output.
 #'
 #' @param ms A list of one or more model objects that are 
-#'    compatible with the summary() function
-#' @param est A character vector of the covariates to output
-#' @param est_names A character vector of labels for est
+#'    compatible with the summary() function.
+#' @param est A character vector of the covariates to output. To output 
+#'    different coefficients for different models, pass in est as a list, where
+#'    est[[i]] specifies the covariates to output for ms[[i]]. 
+#' @param est_names A character vector of labels for est. If outputting
+#'    different covariates for different models, pass in est_names as a list, 
+#'    where est_names[[i]] specifies the names for est[[i]]. 
 #' @param mnames A character vector of labels for each model object in ms
 #' @param extra_rows A character vector additional information to display for
 #'    each model, such as fixed effects or controls.
 #' @param stats A character vector specifying which model statistics should be
-#'    kept in the output
-#' @param stats_names A character vector of labels for each object in stats
+#'    kept in the output. The names of the statistics should match variable names
+#'    created by \code{\link[broom:glance]{glance}} (r.squared, adj.r.squared, 
+#'    sigma, p.value). To output different summary statistics for different 
+#'    models, create a list of length(ms), where stats[[i]] specifies the 
+#'    summary statistics for ms[[i]]. 
+#' @param stats_names A character vector of labels for each object in stats. If 
+#'    outputting different summary statistics for different models, pass in
+#'    stats_names as a list, where stats_names[[i]] specifies the names for
+#'    stats[[i]].
 #' @param output_format A string passed to kable() that specifies the format of
-#'    the table output. The options are latex, html, markdown, pandoc, and rst.
-#'    The default is latex
+#'    the table output. The options are "latex", "html", "markdown", "pandoc", 
+#'    and "rst". The default is "latex". Additionally, passing in "df" will output a 
+#'    dataframe version of the table, which can be used with regtable_stack()
+#'    to create a table with multiple regression summaries. 
 #' @param sig_stars Logical indicating whether or not significant stars should
-#'    be added to the coefficients
+#'    be added to the coefficients.
 #' @param note A character string if a footnote is to be added to the end of the
 #'    table.
+#' @param header A character vector to be passed into 
+#'    \code{\link[kableExtra:add_header_above]{add_header_above}} that creates
+#'    a new header row. This should have length equal to ms from regtable(). 
+#' 
 #' @examples
-#' height <- runif(100, 60, 78)
-#' dad_height <- runif(100, 66, 78)
-#' mom_height <- runif(100, 60, 72)
+#' library(lfe)
 #' 
-#' model <- lm(height ~ dad_height + mom_height)
-#' latex_output <- regtable(list(model), 
-#'    est = c('dad_height', 'mom_height'), 
-#'    output_format = "latex")
+#' # create covariates
+#' x1 <- rnorm(1000)
+#' x2 <- rnorm(length(x1))
 #' 
+#' # fixed effects
+#' fe <- factor(sample(20, length(x1), replace=TRUE))
+#' 
+#' # effects for fe
+#' fe_effs <- rnorm(nlevels(fe))
+#' 
+#' # creating left hand side y
+#' u <- rnorm(length(x1))
+#' y <- 2 * x1 + x2 + fe_effs[fe] + u
+#' 
+#' m1 <- felm(y ~ x1 + x2 | fe)
+#' m2 <- glm(y ~ x1 + x2)
+#' 
+#' 
+#' regtable(list(m1, m2), est = list("x1", c("x1", "x2")), 
+#'          stats = list(c("adj.r.squared"), c("AIC")),
+#'          stats_names = list(c("$Adj R^2$"), c("AIC")), 
+#'          sig_stars = TRUE, output_format = "rst")
+
 #' @importFrom magrittr %>%
 #' @importFrom tibble tibble as_tibble
 #' @importFrom purrr map_dfc map2_df reduce map2
@@ -65,12 +98,8 @@ get_tau <- function(m, colname, se_fun, decimals, est, est_names,
   colname1 <- quo_name(enquo(colname))
 
   # extract coefficients and standard errors
-  if (is.null(se_fun)) {
-    output <- coeftest(m)
-  } else {
-    output <- coeftest(m, se_fun(m, ...))
-  }
-
+  output <- coeftest(m, se_fun(m, ...))
+  
   # add significant stars if sig_stars == TRUE
   output <-
     output %>%
@@ -116,19 +145,28 @@ get_tau <- function(m, colname, se_fun, decimals, est, est_names,
 
 
 # Extract summary statistics from model --------------------------------------
-get_stats <- function(m, stats, n_obs){
+get_stats <- function(m, stat1, stats_name, mnames, n_obs){
+  stats_out <- glance(m)
+
+  if(!is.null(stat1)) stats_out <- select(stats_out, one_of(stat1))
+  if(is.null(stats_name)) stats_name <- colnames(stats_out)
+  
   stats_out <-
-    glance(m) %>%
-    select(one_of(stats)) %>%
+    stats_out %>%
     t() %>%
     round(., 3) %>%
     format(., nsmall = 3, big.mark = ",") %>%
     str_replace_all(., ".000$", "") %>%
     trimws
 
-  if(n_obs) stats_out <- c(format(length(fitted(m)), big.mark = ","), stats_out)
-
-  return(stats_out)
+  if(n_obs){
+    stats_out <- c(format(length(fitted(m)), big.mark = ","), stats_out) 
+    stats_out <- bind_cols(!!mnames := stats_out, term = c("N", stats_name))
+  } else{
+    stats_out <- bind_cols(!!mnames := stats_out, term = stats_name)
+  }
+ 
+  return(as_tibble(stats_out))
 }
 
 # Main regtable function ------------------------------------------------------
@@ -150,24 +188,25 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
   if(is.null(decimals)) decimals <- rep(3, length(ms))
 
   # create section of table housing stats such as N, R^2 and Projected R^2
+  if(!is.list(stats)){ stats <- list(stats)}
+  if(!is.list(stats_names)){ stats_names <- list(stats_names)}
+  if(!is.list(n_obs)){n_obs <- list(n_obs)}
+
   statstable <-
-    ms %>%
-    map_dfc(function(x) get_stats(x, stats, n_obs)) %>%
-    setNames(mnames) %>%
+    pmap(list(ms, stats, stats_names, mnames, n_obs), get_stats) %>%
+    reduce(full_join, by = "term") %>%
+    select(term, everything()) %>%
     mutate(type = "")
-
-  if(n_obs){
-    statstable <- mutate(statstable, term = c("N", stats_names))
-  } else {statstable <- mutate(statstable, term = stats_names)}
-
 
   # create section of table housing coefficients and standard error
   if(!is.list(se_fun)) se_fun <- list(se_fun)
+  if(!is.list(est)) est <- list(est)
+  if(!is.list(est_names)) est_names <- list(est_names)
 
   coef_table <-
-    pmap(list(ms, mnames, se_fun, decimals),
-         get_tau, est, est_names, sig_stars, ...) %>%
-    reduce(inner_join)
+    pmap(list(ms, mnames, se_fun, decimals, est, est_names),
+         get_tau, sig_stars, ...) %>%
+    reduce(full_join, by = c("term", "type"))
 
   # replace NA and (NA) with spaces in Latex Tables
   if(output_format == "latex") {
@@ -188,7 +227,7 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
       rename_all(~ mnames) %>%
       mutate(type = "",
              term = names(extra_rows))
-    row_spec_no <- length(extra_rows) + 2 * length(est)
+    row_spec_no <- length(extra_rows) + 2 * max(map_dbl(est, length))
 
   } else {
     extras <- NULL
@@ -196,17 +235,22 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
   }
 
   # bind together the regression coefficients, stats, and extra lines
-  if(output_format == "df"){
+ if(output_format == "df"){
     final_table <-
       mutate(coef_table, part = "coef") %>%
-      bind_rows(mutate(extras, part = "extra")) %>%
-      bind_rows(mutate(statstable, part = "stats"))
-    return(final_table)
+      bind_rows(mutate(statstable, part = "stats")) 
+
+    if(!is.null(extras)){
+      final_tables <-
+        final_tables %>%
+        bind_rows(mutate(extras, part = "extra"))
+    }
+    return(list(output = final_table, model_names = mnames)) 
   }
 
   final_table <-
-    final_table <-
     bind_rows(coef_table, extras, statstable) %>%
+    mutate_all(funs(if_else(is.na(.), "", .))) %>%
     select(-type) %>%
     rename(` ` = term)  %>%
     kable(format = output_format,
@@ -222,11 +266,12 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
   if(output_format == "latex"){
     final_table <-
       final_table %>%
-      row_spec(2 * length(est), extra_latex_after = "\\midrule") %>%
+      row_spec(2 * max(map_dbl(est, length)), 
+        extra_latex_after = "\\midrule") %>%
       row_spec(row_spec_no, extra_latex_after = "\\midrule") %>%
       collapse_rows(columns = 1, latex_hline = "none")
 
-    # ridiculous hack to get latex \ back in my phantoms...
+    # ridiculous hack to get latex \ back in phantoms
     final_table <-
       final_table %>%
       str_replace_all(fixed("phantom{X}"), "\\phantom{X}")
@@ -234,81 +279,4 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
 
   return(final_table)
 }
-
-
-# regtable stack ------------------------------------------------------------
-# function that takes several regtable outputs (in dataframe format) and
-# stacks them together
-#' @export
-#' @rdname regtable
-regtable_stack <- function(final_tables, table_names = NULL, 
-  output_format = "latex", note = NULL, header = NULL){
-
-  if(!is.null(table_names)){
-    final_df <-
-      map2_df(final_tables, table_names,
-        function(x, y) mutate(x, table_name = y))
-  } else{
-    final_df <-
-      map_df(final_tables, c) %>%
-      mutate(table_name = NA)
-  }
-
-  final_df <- mutate(final_df, part = if_else(term == "N", "extra", part))
-
-  coef <-
-    final_df %>%
-    filter(part == "coef" | part == "stats")  %>%
-    mutate(term = if_else(part == "coef" & !is.na(table_name),
-      paste(term, "-", table_name), term))
-
-  extra <-
-    final_df %>%
-    filter(part == "extra") %>%
-    select(-table_name) %>%
-    distinct()
-
-  output <-
-    bind_rows(coef, extra) %>%
-    select(-type, -table_name, -part) %>%
-    rename(` ` = term)
-
-  mnames <- colnames(output)
-
-  output <-
-    output %>%
-    kable(format = output_format,
-          booktabs = TRUE,
-          col.names = colnames(.),
-          linesep = "",
-          escape = FALSE,
-          align = c('l', rep('c', length(mnames)))) %>%
-    add_footnote(note)
-
-  if(!is.null(header)) final_table <- final_table %>% add_header_above(header)
-
-  if(output_format == "latex"){
-    break_end <- nrow(coef)
-    break_start <- break_end / length(final_tables)
-    breaks <- seq(break_start, break_end, break_start)
-
-    output <-
-      output %>%
-      row_spec(breaks, extra_latex_after = "\\midrule") %>%
-      collapse_rows(columns = 1, latex_hline = "none")
-
-    # ridiculous hack to get latex \ back in my phantoms...
-    output <-
-      output %>%
-      str_replace_all(fixed("phantom{X}"), "\\phantom{X}")
-  }
-
-  return(output)
-
-}
-
-
-
-
-
 
