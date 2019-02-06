@@ -1,1 +1,1 @@
-devtools::check()
+devtools::check(error_on='error')

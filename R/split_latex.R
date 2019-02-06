@@ -12,7 +12,7 @@
 #' latex code you want to read into R was created by regtable() using the 
 #' extra_rows argument, and you're interested in seeing the content of 
 #' those extra rows. 
-
+#' @return A dataframe with specific regression information.
 #' @examples
 #' library(lfe)
 #' 
@@ -42,22 +42,18 @@
 #'    sig_stars = TRUE, output_format = "latex")
 #' 
 #' # read in regtable coefficients
-#' latex_coef <- read_latex(latex, output = 'coef')
+#' latex_coef <- split_latex(latex, output = 'coef')
 #' 
 #' # read in regtable statistics
-#' latex_stats <- read_latex(latex, output = 'stats')
+#' latex_stats <- split_latex(latex, output = 'stats')
 #' 
-#' @import tidyverse
+#' @import dplyr
 #' @import knitr
-#' @import readr
 #' @import janitor
+#' @importFrom stringr str_detect str_extract
+#' @importFrom tidyr fill
 #' @name split_latex
 NULL
-
-library(tidyverse)
-library(knitr)
-library(readr)
-library(janitor)
 
 #===========
 # read latex

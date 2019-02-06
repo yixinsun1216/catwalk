@@ -1,4 +1,5 @@
-library(tidyverse)
+library(dplyr)
+library(tidyr)
 library(testthat)
 require(stats)
 library(lfe)
@@ -6,6 +7,9 @@ library(kableExtra)
 library(lmtest)
 library(modelr)
 library(broom)
+library(knitr)
+library(stringr)
+library(janitor)
 
 #===========
 # read in

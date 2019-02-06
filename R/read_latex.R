@@ -9,6 +9,7 @@
 #' @param keep_commas A Boolean specifying whether to keep commas in the table.
 #' @param keep_parens A Boolean specifying whether to keep parentheses in the 
 #' table.
+#' @return A tibble. 
 #' @examples
 #' library(lfe)
 #' 
@@ -43,25 +44,18 @@
 #' # read in latex regtable as tibble
 #' table <- read_latex('table.tex') 
 #' 
-#' @import tidyverse
-#' @import knitr
-#' @import readr
-#' @import janitor
-#' @import zoo
+#' @export
+#' @importFrom magrittr %>%
+#' @importFrom stringr str_split 
+#' @importFrom zoo na.locf
 #' @name read_latex
 NULL
-
-library(tidyverse)
-library(knitr)
-library(readr)
-library(janitor)
-library(zoo)
 
 #===========
 # read latex
 #===========
 
-#' @export
+#' 
 #' @rdname read_latex
 read_latex <- function(latex_file, keep_sig_stars = FALSE, keep_commas = TRUE, 
   keep_parens = TRUE){

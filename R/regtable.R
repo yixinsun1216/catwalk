@@ -36,7 +36,7 @@
 #' @param header A character vector to be passed into 
 #'    \code{\link[kableExtra:add_header_above]{add_header_above}} that creates
 #'    a new header row. This should have length equal to ms from regtable(). 
-#' 
+#' @return A regression table of the format specified by output_format.
 #' @examples
 #' library(lfe)
 #' 
@@ -66,15 +66,15 @@
 
 #' @importFrom magrittr %>%
 #' @importFrom tibble tibble as_tibble
-#' @importFrom purrr map_dfc map2_df reduce map2
+#' @importFrom purrr map_dfc map2_df reduce map2 pmap map_dbl
 #' @importFrom stats symnum
 #' @importFrom knitr kable
 #' @importFrom kableExtra collapse_rows row_spec add_footnote
-#' @importFrom stringr str_replace_all
+#' @importFrom stringr str_replace str_replace_all regex fixed
 #' @importFrom tidyr gather
 #' @importFrom rlang quo_name enquo
 #' @import dplyr
-#' @importFrom broom glance
+#' @importFrom broom glance tidy
 #' @importFrom lmtest coeftest
 #' @name regtable
 NULL

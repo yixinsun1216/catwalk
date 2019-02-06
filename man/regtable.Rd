@@ -55,8 +55,11 @@ be added to the coefficients.}
 \item{note}{A character string if a footnote is to be added to the end of the
 table.}
 }
+\value{
+A regression table of the format specified by output_format.
+}
 \description{
-This routine creates Latex code, HTML code, and text tables that
+This routine creates latex code, HTML code, and text tables that
 present regression output.
 }
 \examples{

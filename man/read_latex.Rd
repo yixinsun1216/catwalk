@@ -18,6 +18,9 @@ in the table.}
 \item{keep_parens}{A Boolean specifying whether to keep parentheses in the 
 table.}
 }
+\value{
+A tibble.
+}
 \description{
 This function reads in latex code of a regression summary into 
 R, returning the latex table in its entirety in a tibble format.
@@ -44,14 +47,14 @@ m1 <- felm(y ~ x1 + x2 | fe)
 m2 <- glm(y ~ x1 + x2)
 
 # format models using regtable
-latex_output <- 
+latex <- 
    regtable(list(m1, m2), est = list("x1", c("x1", "x2")), 
    stats = list(c("adj.r.squared"), c("AIC")),
    stats_names = list(c("$Adj R^2$"), c("AIC")), 
    sig_stars = TRUE, output_format = "latex")
 
 # write regtable to latex
-writeLines(latex_output, 'table.tex')
+writeLines(latex, 'table.tex')
 
 # read in latex regtable as tibble
 table <- read_latex('table.tex') 

@@ -12,7 +12,6 @@ License: CC0
 Encoding: UTF-8
 LazyData: true
 Imports:
-    tidyverse,
     knitr,
     kableExtra, 
     lmtest, 

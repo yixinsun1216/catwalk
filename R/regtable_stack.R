@@ -25,7 +25,7 @@
 #' @param header A character vector to be passed into 
 #'    \code{\link[kableExtra:add_header_above]{add_header_above}} that creates
 #'    a new header row. This should have length equal to ms from regtable()
-#' 
+#' @return A stacked regtable of the format specified by output_format.
 #' @examples
 #' library(lfe)
 #' 
@@ -67,7 +67,6 @@
 #' @importFrom knitr kable
 #' @importFrom kableExtra collapse_rows row_spec add_footnote
 #' @importFrom stringr str_replace_all
-#' @import dplyr
 #' @importFrom broom glance
 #' @name regtable_stack
 #' 

@@ -14,28 +14,27 @@
 #'
 #' @param formula The regression formula to evaluate
 #' @param data The dataframe that contains all the variables used in the formula
-
+#' @return An estimated model.
 #' @examples
+#' library(tibble)
 #' # create mock data
 #' height <- runif(100, 60, 78)
 #' dad_height <- runif(100, 66, 78)
 #' mom_height <- runif(100, 60, 72)
+#' 
 #' df <- tibble(height = height, dad_height = dad_height, 
 #'    mom_height = mom_height)
 #' 
 #' # evaluate model using rf_semipar
 #' model <- rf_semipar(height ~ dad_height | mom_height, data = df)
-#'  
-#' @import tidyverse
-#' @import Formula
-#' @import grf
+#' @export
+#' @importFrom tibble tibble 
+#' @importFrom purrr pluck
+#' @importFrom stringr str_replace_all
+#' @importFrom grf causal_forest regression_forest
+#' @importFrom Formula Formula
 #' @name rf_semipar
 NULL
-
-
-library(tidyverse)
-library(Formula)
-library(grf)
 
 #===========================================================================
 # RANDOM FOREST HELPER FUNCTIONS
@@ -177,7 +176,6 @@ regression_forest_resid2 <- function(f, d, ...) {
 # like, say, a call to bs() from the splines package, you are going to get
 # pretty crazy names, but it should still work.
 
-#' @export
 #' @rdname rf_semipar 
 rf_semipar <- function(formula, data, ...) {
   # step 0: ensure fm has no intercept in the parametric part

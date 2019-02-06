@@ -17,9 +17,12 @@ latex code you want to read into R was created by regtable() using the
 extra_rows argument, and you're interested in seeing the content of 
 those extra rows.}
 }
+\value{
+A dataframe with specific regression information.
+}
 \description{
-This function reads in Latex code of a regression summary into 
-R, returning a subset of the Latex code representing regression coefficients, 
+This function reads in latex code of a regression summary into 
+R, returning a subset of the latex code representing regression coefficients, 
 statistics, or extra information.
 }
 \examples{
@@ -51,9 +54,9 @@ latex <-
    sig_stars = TRUE, output_format = "latex")
 
 # read in regtable coefficients
-latex_coef <- read_latex(latex, output = 'coef')
+latex_coef <- split_latex(latex, output = 'coef')
 
 # read in regtable statistics
-latex_stats <- read_latex(latex, output = 'stats')
+latex_stats <- split_latex(latex, output = 'stats')
 
 }

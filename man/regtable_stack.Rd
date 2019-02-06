@@ -8,7 +8,7 @@ regtable_stack(final_tables, table_names = NULL,
   output_format = "latex", note = NULL, header = NULL)
 }
 \arguments{
-\item{final_tables}{list of output produced by regtable, which includes 
+\item{final_tables}{A list of output produced by regtable, which includes 
 \itemize{
   \item \emph{output}: a dataframe version of the regtable results
   \item \emph{model_names}: either the character vector specified by 
@@ -32,11 +32,14 @@ table.}
 \code{\link[kableExtra:add_header_above]{add_header_above}} that creates
 a new header row. This should have length equal to ms from regtable()}
 }
+\value{
+A stacked regtable of the format specified by output_format.
+}
 \description{
 This routine takes in multiple outputs from regtable and 
 arranges them into one output. The function stacks the different coefficients 
 and summary statistics, while the extra_rows are grouped at the bottom of the 
-regtable_stack() output.
+output.
 }
 \examples{
 library(lfe)
