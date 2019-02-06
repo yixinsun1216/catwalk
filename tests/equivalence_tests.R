@@ -17,7 +17,7 @@ while (basename(root) != 'catwalk'){
 }
 
 source(file.path(root, "R", "regtable.R")) 
-source(file.path(root, "R", "read_latex.R")) 
+source(file.path(root, "R", "split_latex.R")) 
 source(file.path(root, "R", "random_forest_utils.R")) 
 
 #===========
@@ -81,7 +81,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 				count = count + 1
 
 				latex_coef <- 
-					read_latex(latex_output, output = 'coef') %>% 
+					split_latex(latex_output, output = 'coef') %>% 
 					filter(type=='coef') %>% 
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
@@ -112,7 +112,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 				count = count + 1
 
 				latex_se <- 
-					read_latex(latex_output, output = 'coef') %>% 
+					split_latex(latex_output, output = 'coef') %>% 
 					filter(type=='se') %>% 
 					select(-c(est_name, type)) %>% 
 					pull(count) %>% 
@@ -146,7 +146,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			adj_name <- regex("^adj", ignore_case = TRUE)
 
 			latex_projected_R2 <- 
-			  read_latex(latex_output, output = 'stats') %>%
+			  split_latex(latex_output, output = 'stats') %>%
 			  filter(stats_name=='Proj. $R^2$') %>%
 			  gather(key, stats, -stats_name) %>%
 			  select(stats)
@@ -165,7 +165,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_projected_R2 <- read_latex(latex_output, 
+				latex_projected_R2 <- split_latex(latex_output, 
 					output = 'stats') %>% 
 					filter(stats_name=='Proj. $R^2$') %>% 
 					select(-stats_name) %>% 
@@ -187,7 +187,7 @@ test_model <- function(model_list, test_statement, est, est_names = NULL,
 			count = 0
 			while (count<length(model_list)) {
 				count = count + 1
-				latex_N <- read_latex(latex_output, output = 'stats') %>% 
+				latex_N <- split_latex(latex_output, output = 'stats') %>% 
 					filter(stats_name=='N') %>% 
 					select(-stats_name) %>% 
 					pull(count) %>% 

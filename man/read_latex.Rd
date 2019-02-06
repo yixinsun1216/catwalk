@@ -2,29 +2,58 @@
 % Please edit documentation in R/read_latex.R
 \name{read_latex}
 \alias{read_latex}
-\title{Read latex output into R}
+\title{Read Latex Table into R}
 \usage{
-read_latex(latex_output, output = "coef")
+read_latex(latex_file, keep_sig_stars = FALSE, keep_commas = TRUE,
+  keep_parens = TRUE)
 }
 \arguments{
-\item{latex_output}{The latex code to be converted into R objects}
+\item{latex_file}{The path of the latex table to be converted into a tibble.}
 
-\item{output}{A character vector specifying which type of regression output 
-should be converted to an R object. Options are 'coef', 'stats', and 'extra'}
+\item{keep_sig_stars}{A Boolean specifying whether to keep significance stars
+in the table.}
+
+\item{keep_commas}{A Boolean specifying whether to keep commas in the table.}
+
+\item{keep_parens}{A Boolean specifying whether to keep parentheses in the 
+table.}
 }
 \description{
-This function reads in Latex code of a regression summary into R
+This function reads in latex code of a regression summary into 
+R, returning the latex table in its entirety in a tibble format.
 }
 \examples{
-height <- runif(100, 60, 78)
-dad_height <- runif(100, 66, 78)
-mom_height <- runif(100, 60, 72)
+library(lfe)
 
-model <- lm(height ~ dad_height + mom_height)
-latex_output <- regtable(list(model), 
-   est = c('dad_height', 'mom_height'), 
-   output_format = "latex")
+# create covariates
+x1 <- rnorm(1000)
+x2 <- rnorm(length(x1))
 
-latex_coef <- read_latex(latex_output, output = 'coef')
+# fixed effects
+fe <- factor(sample(20, length(x1), replace=TRUE))
+
+# effects for fe
+fe_effs <- rnorm(nlevels(fe))
+
+# creating left hand side y
+u <- rnorm(length(x1))
+y <- 2 * x1 + x2 + fe_effs[fe] + u
+
+# evaluate models
+m1 <- felm(y ~ x1 + x2 | fe)
+m2 <- glm(y ~ x1 + x2)
+
+# format models using regtable
+latex_output <- 
+   regtable(list(m1, m2), est = list("x1", c("x1", "x2")), 
+   stats = list(c("adj.r.squared"), c("AIC")),
+   stats_names = list(c("$Adj R^2$"), c("AIC")), 
+   sig_stars = TRUE, output_format = "latex")
+
+# write regtable to latex
+writeLines(latex_output, 'table.tex')
+
+# read in latex regtable as tibble
+table <- read_latex('table.tex') 
 
 }

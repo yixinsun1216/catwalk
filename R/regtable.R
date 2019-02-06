@@ -1,6 +1,6 @@
-#' @title Format R regression output 
+#' @title Format R Regression Output 
 #'
-#' @description This routine creates Latex code, HTML code, and text tables that
+#' @description This routine creates latex code, HTML code, and text tables that
 #' present regression output.
 #'
 #' @param ms A list of one or more model objects that are 
@@ -54,10 +54,11 @@
 #' u <- rnorm(length(x1))
 #' y <- 2 * x1 + x2 + fe_effs[fe] + u
 #' 
+#' # evaluate models
 #' m1 <- felm(y ~ x1 + x2 | fe)
 #' m2 <- glm(y ~ x1 + x2)
 #' 
-#' 
+#' # format models using regtable
 #' regtable(list(m1, m2), est = list("x1", c("x1", "x2")), 
 #'          stats = list(c("adj.r.squared"), c("AIC")),
 #'          stats_names = list(c("$Adj R^2$"), c("AIC")), 

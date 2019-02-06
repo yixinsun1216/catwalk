@@ -30,5 +30,6 @@ Imports:
     rlang, 
     stringr, 
     tibble, 
-    tidyr
+    tidyr, 
+    zoo
 RoxygenNote: 6.1.1

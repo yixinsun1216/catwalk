@@ -3,9 +3,9 @@
 #' @description This routine takes in multiple outputs from regtable and 
 #' arranges them into one output. The function stacks the different coefficients 
 #' and summary statistics, while the extra_rows are grouped at the bottom of the 
-#' regtable_stack() output. 
+#' output. 
 #'
-#' @param final_tables list of output produced by regtable, which includes 
+#' @param final_tables A list of output produced by regtable, which includes 
 #'    \itemize{
 #'      \item \emph{output}: a dataframe version of the regtable results
 #'      \item \emph{model_names}: either the character vector specified by 
@@ -56,6 +56,7 @@
 #' r2 <- regtable(list(n1, n2), est = "x1", 
 #'          output_format = "df")
 #' 
+#' # stack output using regtable_stack
 #' regtable_stack(list(r1, r2), table_names = c("1", "2"), 
 #'    output_format = "rst")
 #' 

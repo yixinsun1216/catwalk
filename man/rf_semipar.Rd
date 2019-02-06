@@ -25,12 +25,14 @@ like, say, a call to bs() from the splines package, you are going to get
 pretty crazy names, but it should still work.
 }
 \examples{
+# create mock data
 height <- runif(100, 60, 78)
 dad_height <- runif(100, 66, 78)
 mom_height <- runif(100, 60, 72)
 df <- tibble(height = height, dad_height = dad_height, 
    mom_height = mom_height)
 
+# evaluate model using rf_semipar
 model <- rf_semipar(height ~ dad_height | mom_height, data = df)
  
 }
