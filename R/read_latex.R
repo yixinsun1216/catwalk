@@ -4,19 +4,42 @@
 #'
 #' @param latex_output The latex code to be converted into R objects
 #' @param output A character vector specifying which type of regression output 
-#' should be converted to an R object. Options are 'coef', 'stats', and 'extra'
+#' should be converted to an R object. Options are "coef", "stats", and "extra". 
+#' "coef" refers to regression coefficients and standard errors, and "stats" 
+#' refers to other statistics such as N and R^2. "extra" should be used if the 
+#' latex code you want to read into R was created by regtable() using the 
+#' extra_rows argument, and you're interested in seeing the content of 
+#' those extra rows. 
 
 #' @examples
-#' height <- runif(100, 60, 78)
-#' dad_height <- runif(100, 66, 78)
-#' mom_height <- runif(100, 60, 72)
+#' library(lfe)
 #' 
-#' model <- lm(height ~ dad_height + mom_height)
-#' latex_output <- regtable(list(model), 
-#'    est = c('dad_height', 'mom_height'), 
-#'    output_format = "latex")
+#' # create covariates
+#' x1 <- rnorm(1000)
+#' x2 <- rnorm(length(x1))
+#' 
+#' # fixed effects
+#' fe <- factor(sample(20, length(x1), replace=TRUE))
+#' 
+#' # effects for fe
+#' fe_effs <- rnorm(nlevels(fe))
+#' 
+#' # creating left hand side y
+#' u <- rnorm(length(x1))
+#' y <- 2 * x1 + x2 + fe_effs[fe] + u
+#' 
+#' m1 <- felm(y ~ x1 + x2 | fe)
+#' m2 <- glm(y ~ x1 + x2)
+#' 
+#' 
+#' latex_output <- 
+#'    regtable(list(m1, m2), est = list("x1", c("x1", "x2")), 
+#'    stats = list(c("adj.r.squared"), c("AIC")),
+#'    stats_names = list(c("$Adj R^2$"), c("AIC")), 
+#'    sig_stars = TRUE, output_format = "latex")
 #' 
 #' latex_coef <- read_latex(latex_output, output = 'coef')
+#' latex_stats <- read_latex(latex_output, output = 'stats')
 #' 
 #' @import tidyverse
 #' @import knitr
@@ -87,7 +110,8 @@ read_latex <- function(latex_output, output = 'coef') {
     rename(stats_name = 1) %>%
     filter(!str_detect(stats_name, "\\\\")) %>%
     mutate_all(trimws) %>%
-    mutate_all(funs(str_replace_all(., "\\\\", "")))
+    mutate_all(funs(str_replace_all(., "\\\\", ""))) %>% 
+    mutate_all(funs(str_replace_all(., ",", "")))
 
   # coefficients
   coef <-
@@ -99,6 +123,7 @@ read_latex <- function(latex_output, output = 'coef') {
       est_name = str_replace(est_name, "\\}", "")) %>%
     mutate_all(trimws) %>%
     mutate_all(funs(str_replace_all(., "\\\\", ""))) %>%
+    mutate_all(funs(str_replace_all(., "\\$\\^\\{.*?\\}\\$", ""))) %>%
     mutate_all(funs(if_else(. == "", NA_character_, .))) %>%
     mutate(type = if_else(is.na(est_name), "coef", "se")) %>%
     fill(est_name, .direction = "up") %>%
