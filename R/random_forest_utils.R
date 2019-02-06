@@ -1,6 +1,6 @@
 #' @title Random Forest Helper Functions
 #'
-#' @description Estimate a partially linear model using the robinson 1988 methodology using
+#' @description Estimate a partially linear model using the Robinson 1988 methodology using
 #' random forests as the nonparametric regression technology.  The formula
 #' structure has three parts: y ~ x | z.  y is the outcome, x are the linear
 #' variables and z are the non-parametric variables.  Tt *should* work with
@@ -16,12 +16,14 @@
 #' @param data The dataframe that contains all the variables used in the formula
 
 #' @examples
+#' # create mock data
 #' height <- runif(100, 60, 78)
 #' dad_height <- runif(100, 66, 78)
 #' mom_height <- runif(100, 60, 72)
 #' df <- tibble(height = height, dad_height = dad_height, 
 #'    mom_height = mom_height)
 #' 
+#' # evaluate model using rf_semipar
 #' model <- rf_semipar(height ~ dad_height | mom_height, data = df)
 #'  
 #' @import tidyverse

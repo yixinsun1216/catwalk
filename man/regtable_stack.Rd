@@ -22,8 +22,8 @@ final_tables. These names are concatenated with the coefficent names in
 the output.}
 
 \item{output_format}{A string passed to kable() that specifies the format of
-the table output. The options are latex, html, markdown, pandoc, and rst.
-The default is latex.}
+the table output. The options are "latex", "html", "markdown", "pandoc", 
+and "rst". The default is "latex".}
 
 \item{note}{A character string if a footnote is to be added to the end of the
 table.}
@@ -39,6 +39,8 @@ and summary statistics, while the extra_rows are grouped at the bottom of the
 regtable_stack() output.
 }
 \examples{
+library(lfe)
+
 # create covariates
 x1 <- rnorm(1000)
 x2 <- rnorm(length(x1))
@@ -62,11 +64,13 @@ n2 <- lm(y2 ~ x1 + x2)
 
 # generate output from regtable
 r1 <- regtable(list(m1, m2), est = "x1", 
-       output_format = "df")
+         output_format = "df")
 r2 <- regtable(list(n1, n2), est = "x1", 
-       output_format = "df")
+         output_format = "df")
 
-regtable_stack(list(r1, r2), table_names = c("1", "2"), output_format = "rst")
+# stack output using regtable_stack
+regtable_stack(list(r1, r2), table_names = c("1", "2"), 
+   output_format = "rst")
 
 
 }

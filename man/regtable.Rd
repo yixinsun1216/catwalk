@@ -2,7 +2,7 @@
 % Please edit documentation in R/regtable.R
 \name{regtable}
 \alias{regtable}
-\title{Format R regression output}
+\title{Format R Regression Output}
 \usage{
 regtable(ms, est, mnames = NULL, est_names = NULL, extra_rows = NULL,
   se_fun = vcov, stats = c("r.squared", "adj.r.squared"),
@@ -40,8 +40,8 @@ stats_names as a list, where stats_names[[i]] specifies the names for
 stats[[i]].}
 
 \item{output_format}{A string passed to kable() that specifies the format of
-the table output. The options are latex, html, markdown, pandoc, and rst.
-The default is latex. Additionally, passing in "df" will output a 
+the table output. The options are "latex", "html", "markdown", "pandoc", 
+and "rst". The default is "latex". Additionally, passing in "df" will output a 
 dataframe version of the table, which can be used with regtable_stack()
 to create a table with multiple regression summaries.}
 
@@ -60,6 +60,8 @@ This routine creates Latex code, HTML code, and text tables that
 present regression output.
 }
 \examples{
+library(lfe)
+
 # create covariates
 x1 <- rnorm(1000)
 x2 <- rnorm(length(x1))
@@ -74,10 +76,11 @@ fe_effs <- rnorm(nlevels(fe))
 u <- rnorm(length(x1))
 y <- 2 * x1 + x2 + fe_effs[fe] + u
 
+# evaluate models
 m1 <- felm(y ~ x1 + x2 | fe)
 m2 <- glm(y ~ x1 + x2)
 
-
+# format models using regtable
 regtable(list(m1, m2), est = list("x1", c("x1", "x2")), 
          stats = list(c("adj.r.squared"), c("AIC")),
          stats_names = list(c("$Adj R^2$"), c("AIC")), 
