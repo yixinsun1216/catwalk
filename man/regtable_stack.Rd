@@ -2,7 +2,7 @@
 % Please edit documentation in R/regtable_stack.R
 \name{regtable_stack}
 \alias{regtable_stack}
-\title{Stack Multiple Regressions Outputs}
+\title{Stack Multiple Regression Outputs}
 \usage{
 regtable_stack(final_tables, table_names = NULL,
   output_format = "latex", note = NULL, header = NULL)
@@ -43,13 +43,13 @@ regtable_stack() output.
 x1 <- rnorm(1000)
 x2 <- rnorm(length(x1))
 
-## fixed effects
+# fixed effects
 fe <- factor(sample(20, length(x1), replace=TRUE))
 
-## effects for fe
+# effects for fe
 fe_effs <- rnorm(nlevels(fe))
 
-## creating left hand sides y1 and y2
+# creating left hand sides y1 and y2
 u <- rnorm(length(x1))
 y1 <- 2 * x1 + x2 + fe_effs[fe] + u
 y2 <- 3 * x1 + x2 + fe_effs[fe] + u
@@ -60,7 +60,7 @@ m2 <- lm(y1 ~ x1 + x2)
 n1 <- felm(y2 ~ x1 + x2 | fe)
 n2 <- lm(y2 ~ x1 + x2)
 
-## generate output from regtable
+# generate output from regtable
 r1 <- regtable(list(m1, m2), est = "x1", 
        output_format = "df")
 r2 <- regtable(list(n1, n2), est = "x1", 

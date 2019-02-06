@@ -12,7 +12,7 @@ regtable(ms, est, mnames = NULL, est_names = NULL, extra_rows = NULL,
 }
 \arguments{
 \item{ms}{A list of one or more model objects that are 
-compatible with the summary() function}
+compatible with the summary() function.}
 
 \item{est}{A character vector of the covariates to output. To output 
 different coefficients for different models, pass in est as a list, where
@@ -47,7 +47,7 @@ to create a table with multiple regression summaries.}
 
 \item{header}{A character vector to be passed into 
 \code{\link[kableExtra:add_header_above]{add_header_above}} that creates
-a new header row. This should have length equal to ms from regtable()}
+a new header row. This should have length equal to ms from regtable().}
 
 \item{sig_stars}{Logical indicating whether or not significant stars should
 be added to the coefficients.}
@@ -56,21 +56,21 @@ be added to the coefficients.}
 table.}
 }
 \description{
-This routine creates Latex code, HTML code, and text tables for
-output of a regression summary
+This routine creates Latex code, HTML code, and text tables that
+present regression output.
 }
 \examples{
 # create covariates
 x1 <- rnorm(1000)
 x2 <- rnorm(length(x1))
 
-## fixed effects
+# fixed effects
 fe <- factor(sample(20, length(x1), replace=TRUE))
 
-## effects for fe
+# effects for fe
 fe_effs <- rnorm(nlevels(fe))
 
-## creating left hand side y
+# creating left hand side y
 u <- rnorm(length(x1))
 y <- 2 * x1 + x2 + fe_effs[fe] + u
 
@@ -78,7 +78,7 @@ m1 <- felm(y ~ x1 + x2 | fe)
 m2 <- glm(y ~ x1 + x2)
 
 
-regtable(list(m1, m2), list("x1", c("x1", "x2")), 
+regtable(list(m1, m2), est = list("x1", c("x1", "x2")), 
          stats = list(c("adj.r.squared"), c("AIC")),
          stats_names = list(c("$Adj R^2$"), c("AIC")), 
          sig_stars = TRUE, output_format = "rst")

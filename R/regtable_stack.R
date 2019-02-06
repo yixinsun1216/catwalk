@@ -1,4 +1,4 @@
-#' @title Stack Multiple Regressions Outputs
+#' @title Stack Multiple Regression Outputs
 #'
 #' @description This routine takes in multiple outputs from regtable and 
 #' arranges them into one output. The function stacks the different coefficients 
@@ -18,8 +18,8 @@
 #'    final_tables. These names are concatenated with the coefficent names in 
 #'    the output. 
 #' @param output_format A string passed to kable() that specifies the format of
-#'    the table output. The options are latex, html, markdown, pandoc, and rst.
-#'    The default is latex.
+#'    the table output. The options are "latex", "html", "markdown", "pandoc", 
+#'    and "rst". The default is "latex".
 #' @param note A character string if a footnote is to be added to the end of the
 #'    table.
 #' @param header A character vector to be passed into 
@@ -27,17 +27,19 @@
 #'    a new header row. This should have length equal to ms from regtable()
 #' 
 #' @examples
+#' library(lfe)
+#' 
 #' # create covariates
 #' x1 <- rnorm(1000)
 #' x2 <- rnorm(length(x1))
 #' 
-#' ## fixed effects
+#' # fixed effects
 #' fe <- factor(sample(20, length(x1), replace=TRUE))
 #' 
-#' ## effects for fe
+#' # effects for fe
 #' fe_effs <- rnorm(nlevels(fe))
 #' 
-#' ## creating left hand sides y1 and y2
+#' # creating left hand sides y1 and y2
 #' u <- rnorm(length(x1))
 #' y1 <- 2 * x1 + x2 + fe_effs[fe] + u
 #' y2 <- 3 * x1 + x2 + fe_effs[fe] + u
@@ -48,13 +50,14 @@
 #' n1 <- felm(y2 ~ x1 + x2 | fe)
 #' n2 <- lm(y2 ~ x1 + x2)
 #' 
-#' ## generate output from regtable
+#' # generate output from regtable
 #' r1 <- regtable(list(m1, m2), est = "x1", 
-#'        output_format = "df")
+#'          output_format = "df")
 #' r2 <- regtable(list(n1, n2), est = "x1", 
-#'        output_format = "df")
+#'          output_format = "df")
 #' 
-#' regtable_stack(list(r1, r2), table_names = c("1", "2"), output_format = "rst")
+#' regtable_stack(list(r1, r2), table_names = c("1", "2"), 
+#'    output_format = "rst")
 #' 
 #' 
 #' @importFrom magrittr %>%

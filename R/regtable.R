@@ -1,10 +1,10 @@
 #' @title Format R regression output 
 #'
-#' @description This routine creates Latex code, HTML code, and text tables for
-#' output of a regression summary
+#' @description This routine creates Latex code, HTML code, and text tables that
+#' present regression output.
 #'
 #' @param ms A list of one or more model objects that are 
-#'    compatible with the summary() function
+#'    compatible with the summary() function.
 #' @param est A character vector of the covariates to output. To output 
 #'    different coefficients for different models, pass in est as a list, where
 #'    est[[i]] specifies the covariates to output for ms[[i]]. 
@@ -25,8 +25,8 @@
 #'    stats_names as a list, where stats_names[[i]] specifies the names for
 #'    stats[[i]].
 #' @param output_format A string passed to kable() that specifies the format of
-#'    the table output. The options are latex, html, markdown, pandoc, and rst.
-#'    The default is latex. Additionally, passing in "df" will output a 
+#'    the table output. The options are "latex", "html", "markdown", "pandoc", 
+#'    and "rst". The default is "latex". Additionally, passing in "df" will output a 
 #'    dataframe version of the table, which can be used with regtable_stack()
 #'    to create a table with multiple regression summaries. 
 #' @param sig_stars Logical indicating whether or not significant stars should
@@ -35,20 +35,22 @@
 #'    table.
 #' @param header A character vector to be passed into 
 #'    \code{\link[kableExtra:add_header_above]{add_header_above}} that creates
-#'    a new header row. This should have length equal to ms from regtable()
+#'    a new header row. This should have length equal to ms from regtable(). 
 #' 
 #' @examples
+#' library(lfe)
+#' 
 #' # create covariates
 #' x1 <- rnorm(1000)
 #' x2 <- rnorm(length(x1))
 #' 
-#' ## fixed effects
+#' # fixed effects
 #' fe <- factor(sample(20, length(x1), replace=TRUE))
 #' 
-#' ## effects for fe
+#' # effects for fe
 #' fe_effs <- rnorm(nlevels(fe))
 #' 
-#' ## creating left hand side y
+#' # creating left hand side y
 #' u <- rnorm(length(x1))
 #' y <- 2 * x1 + x2 + fe_effs[fe] + u
 #' 
