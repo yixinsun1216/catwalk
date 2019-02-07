@@ -30,5 +30,6 @@ Imports:
     stringr, 
     tibble, 
     tidyr, 
-    zoo
+    zoo, 
+    devtools
 RoxygenNote: 6.1.1

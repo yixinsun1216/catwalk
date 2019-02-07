@@ -1,1 +1,2 @@
-devtools::check(error_on='error')
+library(devtools)
+checkk(error_on = 'error')
