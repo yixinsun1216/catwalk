@@ -1,2 +1,2 @@
 library(devtools)
-checkk(error_on = 'error')
+check(error_on = 'error')
