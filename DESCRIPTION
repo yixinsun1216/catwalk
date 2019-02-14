@@ -31,5 +31,6 @@ Imports:
     tibble, 
     tidyr, 
     zoo, 
-    devtools
+    devtools, 
+    cowsay
 RoxygenNote: 6.1.1
