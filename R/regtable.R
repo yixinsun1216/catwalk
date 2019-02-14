@@ -279,4 +279,3 @@ regtable <- function(ms, est, mnames = NULL, est_names = NULL,
 
   return(final_table)
 }
-

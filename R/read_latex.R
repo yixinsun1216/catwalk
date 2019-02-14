@@ -43,14 +43,12 @@
 #' 
 #' @import tidyverse
 #' @import knitr
-#' @import readr
 #' @import janitor
 #' @name read_latex
 NULL
 
 library(tidyverse)
 library(knitr)
-library(readr)
 library(janitor)
 
 #===========

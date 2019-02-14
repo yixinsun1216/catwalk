@@ -74,8 +74,9 @@
 #' @export
 #' @rdname regtable_stack
 
-regtable_stack <- function(final_tables, table_names = NULL, output_format = "latex", 
-  note = NULL, header = NULL){
+
+regtable_stack <- function(final_tables, table_names = NULL, 
+  output_format = "latex", note = NULL, header = NULL){
 
   if(!is.null(table_names)){
     final_df <-
@@ -86,6 +87,11 @@ regtable_stack <- function(final_tables, table_names = NULL, output_format = "la
       map_df(final_tables, function(x) c(x$output)) %>%
       mutate(table_name = NA)
   }
+
+  mnames <- 
+    map(final_tables, function(x) c(x$model_names)) %>%
+    unique %>%
+    unlist
 
   final_df <- mutate(final_df, part = if_else(term == "N", "extra", part))
   
@@ -113,7 +119,7 @@ regtable_stack <- function(final_tables, table_names = NULL, output_format = "la
           col.names = colnames(.),
           linesep = "",
           escape = FALSE,
-          align = c('l', rep('c', length(final_tables$model_names)))) %>%
+          align = c('l', rep('c', length(mnames)))) %>%
     add_footnote(note) 
 
   if(!is.null(header)) final_table <- final_table %>% add_header_above(header)
