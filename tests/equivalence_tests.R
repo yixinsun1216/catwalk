@@ -14,6 +14,7 @@ library(broom)
 library(knitr)
 library(stringr)
 library(janitor)
+library(cowsay)
 
 #===========
 # read in
@@ -264,6 +265,16 @@ rf_model3 <-  mtcars %>%
 #===========
 # evaluate tests
 #===========
+	
+art <-
+c("", "------------------", "Welcome to catwalk ", "------------------", "    \\", 
+"      \\", "        \\", "            |\\___/|", "          ==) ^Y^ (==", 
+"            \\  ^  /", "             )=*=(", "            /     \\", 
+"            |     |", "           /| | | |\\", "           \\| | |_|/\\", 
+"           //_// ___/", "               \\_)", "  ")
+
+cat(art, sep = "\n")
+
 
 # 1 model, 1-5 ind. variables, lm
 
