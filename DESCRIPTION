@@ -1,6 +1,6 @@
-Package: regtable
+Package: catwalk
 Type: Package
-Title: Outputting Regression Tables 
+Title: Showing Off Models
 Version: 0.1.0
 Authors@R: c(person("Yixin", "Sun", email = "ysun9@uchicago.edu", 
   role = c("aut", "cre")), 
